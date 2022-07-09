@@ -35,9 +35,6 @@ var repnotify TakeHitInfo DeathHitInfo_ProxyHullMG;
 var repnotify TakeHitInfo DeathHitInfo_ProxyLoader;
 var repnotify TakeHitInfo DeathHitInfo_ProxyGunner;
 
-/** Scope material. Caching it here so that it does not get cooked out */
-var Material ScopeLensMaterial;
-
 replication
 {
     if (bNetDirty)
@@ -2033,8 +2030,6 @@ defaultproperties
     SpeedoMinDegree=5461
     SpeedoMaxDegree=60075
     SpeedoMaxSpeed=1365 //100 km/h
-
-    ScopeLensMaterial=Material'Vehicle_Mats.M_Common_Vehicles.scope_lens'
 
     RanOverDamageType=RODmgType_RunOver_Panzer4
 }

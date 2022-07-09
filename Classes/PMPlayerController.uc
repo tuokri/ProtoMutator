@@ -54,9 +54,9 @@ private reliable server function ServerBlowUpVehicles(optional bool bHitAmmo = f
 
     ForEach AllActors(class'ROVehicle', ROV)
     {
-        ROV.bHitAmmo = bHitAmmo;
+        ROV.bHitAmmo = bHitAmmo || bForceBlowOffTurret;
 
-        if (PMVehicleTank(ROV) != None)
+        if (bForceBlowOffTurret && PMVehicleTank(ROV) != None)
         {
             PMVehicleTank(ROV).BlowupVehicleForcedTurretBlowOff();
         }
@@ -70,6 +70,58 @@ private reliable server function ServerBlowUpVehicles(optional bool bHitAmmo = f
         {
             ROV.DeadVehicleType = DeadVehicleType;
         }
+    }
+}
+
+exec function SpawnVehicle(string TankContentClass)
+{
+    ServerSpawnVehicle(TankContentClass);
+}
+
+exec function SpawnPanzerIVG()
+{
+    SpawnVehicle("ProtoMutator.PMVehicleTank_PanzerIVG_Content");
+}
+
+reliable server function ServerSpawnVehicle(string TankContentClass)
+{
+    local vector X;
+    local vector Y;
+    local vector Z;
+    local vector EndShot;
+    local vector StartShot;
+    local vector CamLoc;
+    local rotator CamRot;
+    local class<ROVehicle> VehicleClass;
+    Local ROVehicle ROV;
+
+    GetPlayerViewPoint(CamLoc, CamRot);
+    GetAxes(CamRot, X, Y, Z);
+    StartShot = CamLoc;
+    EndShot = StartShot + (200.0 * X);
+
+    `pmlog(self $ " attempting to spawn" @ TankContentClass @ "at" @ EndShot);
+    ClientMessage(self $ " attempting to spawn" @ TankContentClass @ "at" @ EndShot);
+
+    VehicleClass = class<ROVehicle>(DynamicLoadObject(TankContentClass, class'Class'));
+    if (VehicleClass != none)
+    {
+        ROV = Spawn(VehicleClass, , , EndShot);
+        ROV.Mesh.AddImpulse(vect(0,0,1), ROV.Location);
+        ClientMessage(self $ " spawned" @ VehicleClass @ ROV @ "at" @ ROV.Location);
+        `pmlog(self $ " spawned" @ VehicleClass @ ROV @ "at" @ ROV.Location);
+    }
+}
+
+exec function LogMyVehicleSeatProxyStates()
+{
+    local PMVehicleTank Tank;
+
+    Tank = PMVehicleTank(Pawn);
+
+    if (Tank != None)
+    {
+        Tank.LogSeatProxyStates(Tank);
     }
 }
 

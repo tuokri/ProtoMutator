@@ -744,7 +744,7 @@ simulated function BlowupVehicleForcedTurretBlowOff()
     }
 }
 
-simulated function LogSeatProxyStates(string Msg)
+simulated function LogSeatProxyStates(coerce string Msg = "")
 {
     local int i;
     local string HiddenStatusStr;
@@ -776,4 +776,7 @@ DefaultProperties
 {
     // This is the same in VehicleCrewProxy, not sure why it's even needed.
     PassengerAnimTree=AnimTree'CHR_Playeranimtree_Master.CHR_Tanker_animtree'
+
+    // For debugging.
+    bInfantryCanUse=True
 }
