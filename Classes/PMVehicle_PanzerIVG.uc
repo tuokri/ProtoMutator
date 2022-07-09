@@ -1434,7 +1434,7 @@ defaultproperties
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
 
-    Seats(2)={( GunClass=class'ROVWeap_PanzerIVG_Turret',
+    Seats(2)={( GunClass=class'PMVWeap_PanzerIVG_Turret',
                 SightOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg',
                 NeedleOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg_TOP',
                 RangeOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_range',
@@ -1478,7 +1478,7 @@ defaultproperties
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
 
-    Seats(3)={( GunClass=class'ROVWeap_PanzerIVG_HullMG',
+    Seats(3)={( GunClass=class'PMVWeap_PanzerIVG_HullMG',
                 SightOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_optics_mg',
                 VignetteOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_optics_vignette',
                 GunSocket=(MG_Barrel),
@@ -1776,7 +1776,7 @@ defaultproperties
     ExplosionInAirAngVel=1.5
     InnerExplosionShakeRadius=400.0
     OuterExplosionShakeRadius=1000.0
-    ExplosionLightClass=class'ROGame.ROGrenadeExplosionLight'
+    ExplosionLightClass=class'ROGrenadeExplosionLight'
     MaxExplosionLightDistance=4000.0
     TimeTilSecondaryVehicleExplosion=2.0f
     SecondaryExplosion=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_C_Explosion_Ammo'
@@ -1788,8 +1788,8 @@ defaultproperties
 //  FlagBone=Object01
 //  FlagOffset=(X=-95.0,Y=59,Z=50)
 
-    DrivingPhysicalMaterial=PhysicalMaterial'VH_Ger_Panzer_IVG.Phys.PhysMat_PanzerIVG_Moving'//PhysicalMaterial'vh_goliath.physmat_goliathdriving'
-    DefaultPhysicalMaterial=PhysicalMaterial'VH_Ger_Panzer_IVG.Phys.PhysMat_PanzerIVG'//PhysicalMaterial'vh_goliath.physmat_goliath'
+    DrivingPhysicalMaterial=PhysicalMaterial'PM_VH_Panzer_IVG.Phys.PhysMat_PanzerIVG_Moving'//PhysicalMaterial'vh_goliath.physmat_goliathdriving'
+    DefaultPhysicalMaterial=PhysicalMaterial'PM_VH_Panzer_IVG.Phys.PhysMat_PanzerIVG'//PhysicalMaterial'vh_goliath.physmat_goliath'
 
 //  BurnOutMaterial[0]=MaterialInterface'VH_Goliath.Materials.MITV_VH_Goliath01_Red_BO'
 //  BurnOutMaterial[1]=MaterialInterface'VH_Goliath.Materials.MITV_VH_Goliath01_Blue_BO'

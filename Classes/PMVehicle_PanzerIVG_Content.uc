@@ -6,12 +6,12 @@ DefaultProperties
     // ------------------------------- Mesh --------------------------------------------------------------
 
     Begin Object Name=ROSVehicleMesh
-        SkeletalMesh=SkeletalMesh'VH_Ger_Panzer_IVG.Mesh.Ger_PZIV_Rig_Master'
+        SkeletalMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Rig_Master'
         //MorphSets[0]=MorphTargetSet'VH_Goliath.Mesh.SK_VH_Goliath_Morph'
-        AnimTreeTemplate=AnimTree'VH_Ger_Panzer_IVG.Anim.AT_VH_PanzerIVG_New'
-        PhysicsAsset=PhysicsAsset'VH_Ger_Panzer_IVG.Phys.Ger_PZIV_Rig_new_Physics'
-        AnimSets.Add(AnimSet'VH_Ger_Panzer_IVG.Anim.PZIV_anim_Master')
-        AnimSets.Add(AnimSet'VH_Ger_Panzer_IVG.Anim.PZIV_Destroyed_anim_Master')
+        AnimTreeTemplate=AnimTree'PM_VH_Panzer_IVG.Anim.AT_VH_PanzerIVG_New'
+        PhysicsAsset=PhysicsAsset'PM_VH_Panzer_IVG.Phys.Ger_PZIV_Rig_new_Physics'
+        AnimSets.Add(AnimSet'PM_VH_Panzer_IVG.Anim.PZIV_anim_Master')
+        AnimSets.Add(AnimSet'PM_VH_Panzer_IVG.Anim.PZIV_Destroyed_anim_Master')
     End Object
 
     // -------------------------------- Sounds -----------------------------------------------------------
@@ -135,12 +135,12 @@ DefaultProperties
 
     // -------------------------------- Dead -----------------------------------------------------------
 
-    DestroyedSkeletalMesh=SkeletalMesh'VH_Ger_Panzer_IVG.Mesh.Ger_PZIV_Destroyed_Master'
-    DestroyedSkeletalMeshWithoutTurret=SkeletalMesh'VH_Ger_Panzer_IVG.Mesh.Ger_PZIV_Body_Destroyed_Master'
-    DestroyedPhysicsAsset=PhysicsAsset'VH_Ger_Panzer_IVG.Phys.Ger_PZIV_Destroyed_Physics'
-    DestroyedMaterial=MaterialInstanceConstant'VH_Ger_Panzer_IVG.Materials.VH_Ger_Panzer_IVG_Destroyed_Mic'
+    DestroyedSkeletalMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Destroyed_Master'
+    DestroyedSkeletalMeshWithoutTurret=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Body_Destroyed_Master'
+    DestroyedPhysicsAsset=PhysicsAsset'PM_VH_Panzer_IVG.Phys.Ger_PZIV_Destroyed_Physics'
+    DestroyedMaterial=MaterialInstanceConstant'PM_VH_Panzer_IVG.Materials.PM_VH_Panzer_IVG_Destroyed_Mic'
     DestroyedFXMaterial=Material'Vehicle_Mats.M_Common_Vehicles.Tank_Fireplanes'
-    DestroyedTurretClass=class'ROGameContent.ROVehicleDeathTurret_PanzerIVG'
+    DestroyedTurretClass=class'PMVehicleDeathTurret_PanzerIVG'
 
     // HUD
     HUDBodyTexture=Texture2D'ui_textures.HUD.Vehicles.ui_hud_tank_pz4_body'
@@ -234,7 +234,7 @@ DefaultProperties
     // -------------- Exterior attachments ------------------//
 
     Begin Object class=StaticMeshComponent name=ExtBodyAttachment0
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_Body'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_Body'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=FALSE,bInitialized=TRUE)
         LightEnvironment = MyLightEnvironment
         CastShadow=true
@@ -247,7 +247,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=ExtBodyAttachment1
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_Turret'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_Turret'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=FALSE,bInitialized=TRUE)
         LightEnvironment = MyLightEnvironment
         CastShadow=true
@@ -260,7 +260,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=ExtBodyAttachment2
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_GunBase'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_GunBase'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=FALSE,bInitialized=TRUE)
         LightEnvironment = MyLightEnvironment
         CastShadow=true
@@ -273,7 +273,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=ExtBodyAttachment3
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_Barrel'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_Barrel'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=FALSE,bInitialized=TRUE)
         LightEnvironment = MyLightEnvironment
         CastShadow=true
@@ -286,7 +286,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=ExtBodyAttachment4
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_MG'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Ext_MG'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=FALSE,bInitialized=TRUE)
         LightEnvironment = MyLightEnvironment
         CastShadow=true
@@ -301,7 +301,7 @@ DefaultProperties
     // -------------- Interior attachments ------------------//
 
     Begin Object class=StaticMeshComponent name=IntBodyAttachment0
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Body'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Body'
         LightingChannels=(Dynamic=FALSE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -314,7 +314,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=IntBodyAttachment6
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Main_Ammo'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Main_Ammo'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -327,7 +327,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=IntBodyAttachment8
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Hull_Side_1'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Hull_Side_1'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -340,7 +340,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=IntBodyAttachment10
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Driver_Side_1'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Driver_Side_1'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -353,7 +353,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=IntBodyAttachment13
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_HullMG'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_HullMG'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -366,7 +366,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=TurretAttachment0
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Turret'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Turret'
         LightingChannels=(Dynamic=FALSE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -379,7 +379,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=TurretAttachment1
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_GunBase'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_GunBase'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -392,7 +392,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=TurretAttachment2
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Coppola'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Coppola'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=true
@@ -405,7 +405,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=TurretAttachment5
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Turret_Details_1'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Turret_Details_1'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -418,7 +418,7 @@ DefaultProperties
     End Object
 
     Begin Object class=StaticMeshComponent name=TurretAttachment7
-        StaticMesh=StaticMesh'VH_Ger_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Turret_Basket'
+        StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Turret_Basket'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
