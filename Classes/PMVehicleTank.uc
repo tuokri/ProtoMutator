@@ -585,16 +585,16 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
         if (bInstantTransition)
         {
             UpdateSeatProxyHealth(GetSeatProxyIndexForSeatIndex(NewSeatIndex), GetSeatProxyForSeatIndex(OldSeatIndex).Health, true);
-            `pmlog("Old Seat Health = " $ GetSeatProxyIndexForSeatIndex(OldSeatIndex).Health);
-            `pmlog("New Seat Health = " $ GetSeatProxyIndexForSeatIndex(NewSeatIndex).Health);
+            `pmlog("Old Seat Health = " $ GetSeatProxyForSeatIndex(OldSeatIndex).Health);
+            `pmlog("New Seat Health = " $ GetSeatProxyForSeatIndex(NewSeatIndex).Health);
         }
         // Animated transition, old proxy is dead -> seat health to 0 (?).
         else
         {
             UpdateSeatProxyHealth(GetSeatProxyIndexForSeatIndex(NewSeatIndex), GetSeatProxyForSeatIndex(OldSeatIndex).Health, true);
             UpdateSeatProxyHealth(GetSeatProxyIndexForSeatIndex(OldSeatIndex), 0, true);
-            `pmlog("Old Seat Health = " $ GetSeatProxyIndexForSeatIndex(OldSeatIndex).Health);
-            `pmlog("New Seat Health = " $ GetSeatProxyIndexForSeatIndex(NewSeatIndex).Health);
+            `pmlog("Old Seat Health = " $ GetSeatProxyForSeatIndex(OldSeatIndex).Health);
+            `pmlog("New Seat Health = " $ GetSeatProxyForSeatIndex(NewSeatIndex).Health);
         }
     }
 
@@ -676,28 +676,30 @@ simulated function bool CanEnterVehicle(Pawn P)
 simulated function FinishTransition(int SeatTransitionedTo)
 {
     local ROPlayerController ROPC;
-    local ROPawn SeatPawn;
+    local ROPawn P;
 
     `pmlog("SeatTransitionedTo=" $ SeatTransitionedTo);
 
-    SeatPawn = ROPawn(Seats[SeatTransitionedTo].SeatPawn);
     // Find the local playercontroller for this transition.
-    ROPC = ROPlayerController(SeatPawn.Controller);
+    ROPC = ROPlayerController(Seats[SeatTransitionedTo].SeatPawn.Controller);
 
     if (ROPC != None && LocalPlayer(ROPC.Player) != none)
     {
         // Set the FOV to the initial FOV for this position when the transition is complete
         ROPC.HandleTransitionFOV(Seats[SeatTransitionedTo].SeatPositions[Seats[SeatTransitionedTo].InitialPositionIndex].ViewFOV, 0.0);
 
-        if (Seats[SeatTransitionedTo].SeatPawn != None)
+        P = ROPawn(ROPC.Pawn);
+        if (P != None)
         {
             // To set correct customization etc...
-            SpawnOrReplaceSeatProxy(SeatTransitionedTo, SeatPawn, IsLocalPlayerInThisVehicle());
+            SpawnOrReplaceSeatProxy(SeatTransitionedTo, P, IsLocalPlayerInThisVehicle());
         }
         else
         {
             // If this happens, should we run some default error handling version of SpawnOrReplaceSeatProxy()?
-            `pmlog("!!! ERROR !!! SeatTransitionedTo=" $ SeatTransitionedTo $ " SeatPawn is NULL!");
+            // Did the player get kicked/disconnected before the transition ended? Did they exit the vehicle
+            // somehow during the transition?
+            `pmlog("!!! ERROR !!! SeatTransitionedTo=" $ SeatTransitionedTo $ " ROPC.Pawn is NULL!");
         }
     }
 
