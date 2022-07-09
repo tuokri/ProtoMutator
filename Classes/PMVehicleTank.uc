@@ -380,7 +380,8 @@ simulated function HandleSeatProxyHealthUpdated()
 
     for ( i = 0; i < SeatProxies.Length; i++ )
     {
-        `pmlog("Before logic : SeatProxies[" $ i $ "] Health=" $ SeatProxies[i].Health);
+        `pmlog("Before logic : SeatProxies[" $ i $ "] Health=" $ SeatProxies[i].Health $ " HiddenGame=" $ SeatProxies[i].ProxyMeshActor.Mesh.HiddenGame,
+            SeatProxies[i].ProxyMeshActor != None);
 
         bRevivingProxy = false;
         ProxySeatIdx = SeatProxies[i].SeatIndex;
@@ -453,7 +454,8 @@ simulated function HandleSeatProxyHealthUpdated()
             }
         }
 
-        `pmlog("After logic  : SeatProxies[" $ i $ "] Health=" $ SeatProxies[i].Health);
+        `pmlog("After logic  : SeatProxies[" $ i $ "] Health=" $ SeatProxies[i].Health $ " HiddenGame=" $ SeatProxies[i].ProxyMeshActor.Mesh.HiddenGame,
+            SeatProxies[i].ProxyMeshActor != None);
     }
 }
 
@@ -485,6 +487,8 @@ simulated function DetachDriver(Pawn P)
 simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int OldSeatIndex, bool bInstantTransition)
 {
     `pmlog("DriverPawn=" $ DriverPawn $ " NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex $ " bInstantTransition=" $ bInstantTransition);
+
+    LogSeatProxyStates(self $ "::" $ GetFuncName() $ "before");
 
     // Ignore ROVehicleTank::UpdateSeatProxyHealth
     super(ROVehicleTreaded).HandleSeatTransition(DriverPawn, NewSeatIndex, OldSeatIndex, bInstantTransition);
@@ -527,6 +531,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
 
         // Turn off or on the OLD proxy mesh depending upon the health of the Proxy.
         // TODO: why is ROVehicleTank checking for NetMode here but not for the other hide/unhide calls?
+        //       Is this SP only logic on purpose?
         if ((WorldInfo.NetMode != NM_DedicatedServer) && (GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor != none))
         {
             `pmlog("Enter (WorldInfo.NetMode != NM_DedicatedServer) branch, NetMode=" $ WorldInfo.NetMode);
@@ -538,7 +543,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
                 if (Seats[OldSeatIndex].SeatPositions[GetSeatProxyForSeatIndex(OldSeatIndex).PositionIndex].bDriverVisible || IsLocalPlayerInThisVehicle())
                 {
                     GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(false);
-                    `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to False because proxy is alive, HiddenGame = "
+                    `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to false because proxy is alive, HiddenGame = "
                         $ GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.Mesh.HiddenGame);
 
                     // Update and re-activate IK for the Proxy Mesh...
@@ -548,11 +553,11 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
             // OLD proxy dead.
             else
             {
-                // Seat no longer enterable -> show proxy. Taken from helo logic.
+                // Seat no longer enterable -> show proxy even if it's dead...
                 if (Seats[OldSeatIndex].bNonEnterable)
                 {
                     GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(false);
-                    `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to true because proxy is non-enterable, HiddenGame = "
+                    `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to false because proxy is non-enterable, HiddenGame = "
                         $ SeatProxies[OldSeatIndex].ProxyMeshActor.Mesh.HiddenGame);
                 }
                 else
@@ -580,38 +585,73 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
         if (bInstantTransition)
         {
             UpdateSeatProxyHealth(GetSeatProxyIndexForSeatIndex(NewSeatIndex), GetSeatProxyForSeatIndex(OldSeatIndex).Health, true);
+            `pmlog("Old Seat Health = " $ GetSeatProxyIndexForSeatIndex(OldSeatIndex).Health);
+            `pmlog("New Seat Health = " $ GetSeatProxyIndexForSeatIndex(NewSeatIndex).Health);
         }
         // Animated transition, old proxy is dead -> seat health to 0 (?).
         else
         {
             UpdateSeatProxyHealth(GetSeatProxyIndexForSeatIndex(NewSeatIndex), GetSeatProxyForSeatIndex(OldSeatIndex).Health, true);
             UpdateSeatProxyHealth(GetSeatProxyIndexForSeatIndex(OldSeatIndex), 0, true);
+            `pmlog("Old Seat Health = " $ GetSeatProxyIndexForSeatIndex(OldSeatIndex).Health);
+            `pmlog("New Seat Health = " $ GetSeatProxyIndexForSeatIndex(NewSeatIndex).Health);
         }
     }
 
     // NOTE: Combined From ROVehicleTank and ROVehicleHelicopter.
-    // TODO: double-check this logic...
     if (GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor != none)
     {
-        // Animated transition -> hide old seat proxy.
+        // Animated transition -> hide old seat proxy. NOTE: we're only doing animated transitions
+        // if the target seat is empty/dead and we are moving out of our position to replace that new seat...
         if (!bInstantTransition)
         {
             GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(true);
+            `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to true because transition was animated, HiddenGame = "
+                    $ SeatProxies[OldSeatIndex].ProxyMeshActor.Mesh.HiddenGame);
         }
-        // NOTE: Helicopter logic below. This should be covered already in the first if(bInstantTransition) branch though...
-        // else
-        // {
-        //     // Seat no longer enterable -> show proxy.
-        //     if (Seats[OldSeatIndex].bNonEnterable)
-        //     {
-        //         GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(false);
-        //     }
-        //     else
-        //     {
-        //         GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(true);
-        //     }
-        // }
+        // Instant transition -> check health and enterability.
+        // NOTE: This should be covered already in the first if(bInstantTransition) branch for SP... Or is it?
+        else
+        {
+            // Old seat is non-enterable -> always show proxy (ignore health).
+            // TODO: is this even possible for tanks? Seats' bNonEnterable values shouldn't change for tanks...
+            //       This branch would happen if we move out of loader's position (which we shouldn't be able
+            //       to enter anyway, in the first place).
+            if (Seats[OldSeatIndex].bNonEnterable)
+            {
+                GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(false);
+                `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to false because proxy is non-enterable, HiddenGame = "
+                    $ SeatProxies[OldSeatIndex].ProxyMeshActor.Mesh.HiddenGame);
+            }
+            // TODO: Need to think about this. If we move out of a dead position, the OLD proxy should be hidden,
+            //       since the only way we got there was if the proxy was dead before we move into the position,
+            //       so we should leave it in dead state after we move away.
+            //       If the OLD proxy is alive, that means we are doing instant transitions and it should be left visible.
+            // Conclusion: lots of convoluted logic (and unnecessary) checks in this function for scenarios that shouldn't happen anyway...
+            else
+            {
+                // Old seat proxy is alive -> show proxy.
+                if (GetSeatProxyForSeatIndex(OldSeatIndex).Health > 0)
+                {
+                    GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(false);
+                    `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to false because proxy alive, HiddenGame = "
+                        $ SeatProxies[OldSeatIndex].ProxyMeshActor.Mesh.HiddenGame);
+                }
+                // Old seat proxy is dead -> hide it.
+                else
+                {
+                    GetSeatProxyForSeatIndex(OldSeatIndex).ProxyMeshActor.HideMesh(true);
+                    `pmlog("SeatProxies[" $ OldSeatIndex $ "] Setting HiddenGame to true because proxy is dead, HiddenGame = "
+                        $ SeatProxies[OldSeatIndex].ProxyMeshActor.Mesh.HiddenGame);
+                }
+            }
+        }
     }
+
+    // NOTE: for animated transitions, SpawnOrReplaceSeatProxy is called in FinishTransition,
+    //       which is triggered by a timer, individually in each vehicle's subclass code.
+
+    LogSeatProxyStates(self $ "::" $ GetFuncName() $ "after");
 }
 
 /**
@@ -630,6 +670,81 @@ function UpdateSeatProxyHealth(int SeatProxyIndex, int NewHealth, optional bool 
 simulated function bool CanEnterVehicle(Pawn P)
 {
     return !bDeadVehicle && super.CanEnterVehicle(P);
+}
+
+// NOTE: Added SpawnOrReplaceSeatProxy.
+simulated function FinishTransition(int SeatTransitionedTo)
+{
+    local ROPlayerController ROPC;
+    local ROPawn SeatPawn;
+
+    `pmlog("SeatTransitionedTo=" $ SeatTransitionedTo);
+
+    SeatPawn = ROPawn(Seats[SeatTransitionedTo].SeatPawn);
+    // Find the local playercontroller for this transition.
+    ROPC = ROPlayerController(SeatPawn.Controller);
+
+    if (ROPC != None && LocalPlayer(ROPC.Player) != none)
+    {
+        // Set the FOV to the initial FOV for this position when the transition is complete
+        ROPC.HandleTransitionFOV(Seats[SeatTransitionedTo].SeatPositions[Seats[SeatTransitionedTo].InitialPositionIndex].ViewFOV, 0.0);
+
+        if (Seats[SeatTransitionedTo].SeatPawn != None)
+        {
+            // To set correct customization etc...
+            SpawnOrReplaceSeatProxy(SeatTransitionedTo, SeatPawn, IsLocalPlayerInThisVehicle());
+        }
+        else
+        {
+            // If this happens, should we run some default error handling version of SpawnOrReplaceSeatProxy()?
+            `pmlog("!!! ERROR !!! SeatTransitionedTo=" $ SeatTransitionedTo $ " SeatPawn is NULL!");
+        }
+    }
+
+    Seats[SeatTransitionedTo].bTransitioningToSeat = false;
+    Seats[SeatTransitionedTo].SeatTransitionBoneName = '';
+    Seats[SeatTransitionedTo].TransitionPawn = none;
+    Seats[SeatTransitionedTo].TransitionProxy = none;
+
+}
+
+// Debug helper.
+simulated function BlowupVehicleForcedTurretBlowOff()
+{
+    local int i;
+
+    VehicleEvent('EngineStop');
+
+    for (i = 0; i < EntryPoints.length; i++)
+    {
+        if (EntryPoints[i].EntryActor != none)
+        {
+            EntryPoints[i].EntryActor.SetBase(none);
+            EntryPoints[i].EntryActor.Destroy();
+            EntryPoints[i].EntryActor = none;
+        }
+    }
+
+    if (WorldInfo.NetMode != NM_Client)
+    {
+        DeadVehicleType = 3;
+    }
+
+    bCanBeBaseForPawns = false;
+    GotoState('DyingVehicle');
+    AddVelocity(TearOffMomentum, TakeHitLocation, HitDamageType);
+    bDeadVehicle = true;
+    bStayUpright = false;
+
+    if (StayUprightConstraintInstance != None)
+    {
+        StayUprightConstraintInstance.TermConstraint();
+    }
+}
+
+simulated function LogSeatProxyStates(string Msg)
+{
+    `pmlog(Msg);
 }
 
 DefaultProperties
