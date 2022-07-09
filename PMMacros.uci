@@ -1,0 +1,4 @@
+`define pmlog(msg, cond, tag) \
+    `log(self.class.name $ "::" $ GetFuncName() $ "(): " $ `msg, \
+    `cond, \
+    `if(`tag), name("ProtoMutator-" $ string(`tag))`else'ProtoMutator'`endif)
