@@ -488,7 +488,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
 {
     `pmlog("DriverPawn=" $ DriverPawn $ " NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex $ " bInstantTransition=" $ bInstantTransition);
 
-    LogSeatProxyStates(self $ "::" $ GetFuncName() $ "before");
+    LogSeatProxyStates(self $ "_" $ GetFuncName() $ "(): before");
 
     // Ignore ROVehicleTank::UpdateSeatProxyHealth
     super(ROVehicleTreaded).HandleSeatTransition(DriverPawn, NewSeatIndex, OldSeatIndex, bInstantTransition);
@@ -651,7 +651,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
     // NOTE: for animated transitions, SpawnOrReplaceSeatProxy is called in FinishTransition,
     //       which is triggered by a timer, individually in each vehicle's subclass code.
 
-    LogSeatProxyStates(self $ "::" $ GetFuncName() $ "after");
+    LogSeatProxyStates(self $ "_" $ GetFuncName() $ "(): after");
 }
 
 /**
@@ -746,7 +746,30 @@ simulated function BlowupVehicleForcedTurretBlowOff()
 
 simulated function LogSeatProxyStates(string Msg)
 {
-    `pmlog(Msg);
+    local int i;
+    local string HiddenStatusStr;
+    local SeatProxy SP;
+    local ROSkeletalMeshComponent SM;
+
+    `pmlog(Msg $ ": SeatProxies:");
+    `log("**** **** **** **** **** ****");
+    for (i = 0; i < SeatProxies.Length; ++i)
+    {
+        SP = SeatProxies[i];
+        SM = SP.ProxyMeshActor.Mesh;
+        if (SM != None)
+        {
+            HiddenStatusStr = string(SM.HiddenGame);
+        }
+        else
+        {
+            HiddenStatusStr = "(mesh==null)";
+        }
+
+        `log("  SeatProxies[" $ i $ "]: Health=" $ SP.Health $ " SeatIndex= " $ SP.SeatIndex
+            $ " PositionIndex=" $ SP.PositionIndex $ " HiddenGame= " $ HiddenStatusStr $ " ProxyMeshActor=" $ SP.ProxyMeshActor);
+    }
+    `log("**** **** **** **** **** ****");
 }
 
 DefaultProperties
