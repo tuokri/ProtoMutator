@@ -3,5 +3,5 @@ class PMDmgType_PanzerIVGShell_AP extends RODamageType_CannonShell_AP
 
 DefaultProperties
 {
-	WeaponShortName="PIVG Cannon"
+	WeaponShortName="PanzerIVG Cannon"
 }

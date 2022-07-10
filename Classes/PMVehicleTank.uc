@@ -17,6 +17,22 @@ enum EDeadVehicleType
     EDVT_FireCrewEscapeFailed,              // 5
 };
 
+// Get engine output level for SoundCue parameters.
+// Adapted from ROVehicle native C++ version.
+// TODO: when adding SoundCue back-port code here, check this again!
+//       There are 2 versions of this in the native vehicle code.
+simulated function float GetEngineOutput()
+{
+    // Scaled by gear change RPM.
+    // 0.0 = 0 RPM.
+    // 1.0 = ChangeUp RPM * 1.1.
+    // Set max clamp to 1.5 because the engine can actually go above
+    // ChangeUpPoint RPM in certain situations.
+    return FClamp(
+        ROVehicleSimTreaded(SimObj).EngineRPM / (ROVehicleSimTreaded(SimObj).ChangeUpPoint * 1.1f),
+        0.0, 1.5);
+}
+
 // NOTE: From ROVehicleHelicopter.
 simulated function SitDriver(ROPawn ROP, int SeatIndex)
 {
@@ -173,12 +189,12 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
 // NOTE: From ROVehicleHelicopter.
 simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility)
 {
-    local int i;//,j;
+    local int i;
     local VehicleCrewProxy CurrentProxyActor;
     local bool bSetMeshRequired;
     local ROMapInfo ROMI;
 
-    // Don't spawn the seat proxy actors on the dedicated server (at least for now)
+    // Don't spawn the seat proxy actors on the dedicated server (at least for now).
     if( WorldInfo == none || WorldInfo.NetMode == NM_DedicatedServer )
     {
         return;
@@ -186,9 +202,11 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
 
     ROMI = ROMapInfo(WorldInfo.GetMapInfo());
 
-    // Don't create proxy if vehicle is dead to prevent leave bodies in the air after round has finished
+    // Don't create proxy if vehicle is dead to prevent leave bodies in the air after round has finished.
     if (IsPendingKill() || bDeadVehicle)
+    {
         return;
+    }
 
     for ( i = 0; i < SeatProxies.Length; i++ )
     {
@@ -241,7 +259,7 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
                 CurrentProxyActor.bExposedToRain = (ROMI != none && ROMI.RainStrength != RAIN_None) && SeatProxies[i].bExposedToRain;
             }
 
-            // Create the proxy mesh
+            // Create the proxy mesh.
             if( !Seats[SeatProxies[i].SeatIndex].bNonEnterable )
             {
                 CurrentProxyActor.ReplaceProxyMeshWithPawn(ROP);
@@ -251,23 +269,29 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
                 CurrentProxyActor.CreateProxyMesh(SeatProxies[i]);
             }
 
-            // Override the animation set
+            // Override the animation set.
             if ( SeatProxyAnimSet != None )
             {
                 CurrentProxyActor.Mesh.AnimSets[0] = SeatProxyAnimSet;
             }
 
             if( bInternalVisibility )
+            {
                 SetSeatProxyVisibilityInterior();
+            }
             else
+            {
                 SetSeatProxyVisibilityExterior();
+            }
 
-            if( !Seats[SeatProxies[i].SeatIndex].bNonEnterable )
+            if (!Seats[SeatProxies[i].SeatIndex].bNonEnterable)
+            {
                 CurrentProxyActor.HideMesh(true);
+            }
             else
             {
                 CurrentProxyActor.UpdateVehicleIK(self, SeatProxies[i].SeatIndex, SeatProxies[i].PositionIndex);
-                if( SeatProxies[i].Health > 0 )
+                if (SeatProxies[i].Health > 0)
                 {
                     ChangeCrewCollision(true, SeatProxies[i].SeatIndex);
                 }
@@ -708,7 +732,7 @@ simulated function bool CanEnterVehicle(Pawn P)
 }
 
 // TODO: this doesn't do anything in ROVehicleTank, it only changes
-// collision in helicopter and transport crew members. We can probably ignore this
+// collision for helicopter and transport crew members. We can probably ignore this
 // for tanks since they don't use CrewHitZoneStart/CrewHitZoneEnd optimization
 // like open top vehicles (transports/helicopters) AND tank crews aren't supposed to
 // take explosion radius damage anyway.

@@ -1730,20 +1730,20 @@ DefaultProperties
     TreadSpeedScale=2.75
 
     // Muzzle Flashes
-    VehicleEffects(TankVFX_Firing1)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_B_TankMuzzle',EffectSocket=Barrel,bRestartRunning=true)
-    VehicleEffects(TankVFX_Firing2)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_B_TankCannon_Dust',EffectSocket=attachments_body_ground,bRestartRunning=true)
+    VehicleEffects(TankVFX_Firing1)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankMuzzle',EffectSocket=Barrel,bRestartRunning=true)
+    VehicleEffects(TankVFX_Firing2)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankCannon_Dust',EffectSocket=attachments_body_ground,bRestartRunning=true)
     VehicleEffects(TankVFX_Firing3)=(EffectStartTag=PanzerIVGHullMG,EffectTemplate=ParticleSystem'FX_MuzzleFlashes.Emitters.muzzleflash_3rdP',EffectSocket=MG_Barrel)
     VehicleEffects(TankVFX_Firing4)=(EffectStartTag=PanzerIVGCoaxMG,EffectTemplate=ParticleSystem'FX_MuzzleFlashes.Emitters.muzzleflash_3rdP',EffectSocket=CoaxMG)
     // Driving effects
     VehicleEffects(TankVFX_Exhaust)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,EffectTemplate=ParticleSystem'FX_VEH_Tank.FX_VEH_Tank_A_TankExhaust',EffectSocket=Exhaust)
-    VehicleEffects(TankVFX_TreadWing)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,bStayActive=true,EffectTemplate=ParticleSystem'FX_VEH_Tank_Three.FX_VEH_Tank_A_Wing_Dirt_PZ4',EffectSocket=attachments_body_ground)
+    VehicleEffects(TankVFX_TreadWing)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,bStayActive=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Wing_Dirt_PZ4',EffectSocket=attachments_body_ground)
     // Damage
-    VehicleEffects(TankVFX_DmgSmoke)=(EffectStartTag=DamageSmoke,EffectEndTag=NoDamageSmoke,bRestartRunning=false,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_A_Damage',EffectSocket=attachments_engine)
-    VehicleEffects(TankVFX_DmgInterior)=(EffectStartTag=DamageInterior,EffectEndTag=NoInternalSmoke,bRestartRunning=false,bInteriorEffect=true,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_Interior_Penetrate',EffectSocket=attachments_body)
+    VehicleEffects(TankVFX_DmgSmoke)=(EffectStartTag=DamageSmoke,EffectEndTag=NoDamageSmoke,bRestartRunning=false,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Damage',EffectSocket=attachments_engine)
+    VehicleEffects(TankVFX_DmgInterior)=(EffectStartTag=DamageInterior,EffectEndTag=NoInternalSmoke,bRestartRunning=false,bInteriorEffect=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_Interior_Penetrate',EffectSocket=attachments_body)
     // Death
-    VehicleEffects(TankVFX_DeathSmoke1)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_1)
-    VehicleEffects(TankVFX_DeathSmoke2)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_2)
-    VehicleEffects(TankVFX_DeathSmoke3)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_3)
+    VehicleEffects(TankVFX_DeathSmoke1)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_1)
+    VehicleEffects(TankVFX_DeathSmoke2)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_2)
+    VehicleEffects(TankVFX_DeathSmoke3)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_3)
 
     TrackSoundParamScale=0.00004    // top speed : 25,000
 
@@ -1764,7 +1764,7 @@ DefaultProperties
 //  IconCoords=(U=831,V=0,UL=27,VL=38)
 
     BigExplosionSocket=FX_Fire
-    ExplosionTemplate=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_C_Explosion'
+    ExplosionTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_C_Explosion'
 
     ExplosionDamageType=class'RODmgType_VehicleExplosion'
     ExplosionDamage=100.0
@@ -1776,7 +1776,7 @@ DefaultProperties
     ExplosionLightClass=class'ROGrenadeExplosionLight'
     MaxExplosionLightDistance=4000.0
     TimeTilSecondaryVehicleExplosion=2.0f
-    SecondaryExplosion=ParticleSystem'FX_VEH_Tank_Two.FX_VEH_Tank_C_Explosion_Ammo'
+    SecondaryExplosion=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_C_Explosion_Ammo'
     bHasTurretExplosion=true
     TurretExplosiveForce=15000
 
