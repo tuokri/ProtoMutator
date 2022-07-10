@@ -51,7 +51,7 @@ DefaultProperties
     // ALT FIREMODE
     FiringStatesArray(ALTERNATE_FIREMODE)=WeaponFiring
     WeaponFireTypes(ALTERNATE_FIREMODE)=EWFT_Projectile
-    WeaponProjectiles(ALTERNATE_FIREMODE)=class'MG34_VehicleBullet'
+    WeaponProjectiles(ALTERNATE_FIREMODE)=class'PMVehicleBullet_MG34'
     FireInterval(ALTERNATE_FIREMODE)=+0.075
     Spread(ALTERNATE_FIREMODE)=0.0007
 
@@ -84,7 +84,7 @@ DefaultProperties
     SmokeAmmoCount=3
 
     // MG Ammo
-    AmmoClass=class'ROAmmo_792x57_MG34Belt_150Rd'
+    AmmoClass=class'PMAmmo_792x57_MG34Belt_150Rd'
     MaxAmmoCount=150
     bUsesMagazines=true
     InitialNumPrimaryMags=9

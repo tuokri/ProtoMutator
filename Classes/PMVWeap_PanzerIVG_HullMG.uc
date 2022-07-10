@@ -12,7 +12,7 @@ DefaultProperties
     // MAIN FIREMODE
     FiringStatesArray(0)=WeaponFiring
     WeaponFireTypes(0)=EWFT_Projectile
-    WeaponProjectiles(0)=class'MG34_VehicleBullet'
+    WeaponProjectiles(0)=class'PMVehicleBullet_MG34'
     FireInterval(0)=+0.075
     FireCameraAnim(0)=CameraAnim'1stperson_Cameras.Anim.Camera_MG34_Shoot'
     Spread(0)=0.0007
@@ -21,7 +21,7 @@ DefaultProperties
     // ALT FIREMODE
     FiringStatesArray(ALTERNATE_FIREMODE)=WeaponSingleFiring
     WeaponFireTypes(ALTERNATE_FIREMODE)=EWFT_Projectile
-    WeaponProjectiles(ALTERNATE_FIREMODE)=class'MG34_VehicleBullet'
+    WeaponProjectiles(ALTERNATE_FIREMODE)=class'PMVehicleBullet_MG34'
     FireInterval(ALTERNATE_FIREMODE)=+0.075
     FireCameraAnim(ALTERNATE_FIREMODE)=CameraAnim'1stperson_Cameras.Anim.Camera_MG34_Shoot'
     Spread(ALTERNATE_FIREMODE)=0.0007
@@ -53,7 +53,7 @@ DefaultProperties
 //  WeaponFireWaveForm=ForceFeedbackWaveformShooting1
 
     // Ammo
-    AmmoClass=class'ROAmmo_792x57_MG34Belt_150Rd'
+    AmmoClass=class'PMAmmo_792x57_MG34Belt_150Rd'
     MaxAmmoCount=150
     bUsesMagazines=true
     InitialNumPrimaryMags=6

@@ -1,5 +1,129 @@
 class PMPlayerController extends ROPlayerController;
 
+function RightLeftLean()
+{
+    ServerLeanLeft(bWantsToLeanLeft);
+}
+
+function LeftRightLean()
+{
+    ServerLeanRight(bWantsToLeanRight);
+}
+
+exec function LeanRight()
+{
+    if (Pawn != None)
+    {
+        if (ROPawn(Pawn) != None)
+        {
+            ROPawn(Pawn).LeanRight();
+        }
+    }
+
+    ServerLeanRight(True);
+}
+
+exec function LeanLeft()
+{
+    if (Pawn != None)
+    {
+        if (ROPawn(Pawn) != None)
+        {
+            ROPawn(Pawn).LeanLeft();
+        }
+    }
+
+
+    ServerLeanLeft(True);
+}
+
+exec function LeanRightReleased()
+{
+    if (Pawn != None)
+    {
+        if (ROPawn(Pawn) != None)
+        {
+            ROPawn(Pawn).LeanRightReleased();
+        }
+    }
+
+    ServerLeanRight(false);
+}
+
+exec function LeanLeftReleased()
+{
+    if (Pawn != None)
+    {
+        if (ROPawn(Pawn) != None)
+        {
+            ROPawn(Pawn).LeanLeftReleased();
+        }
+    }
+
+    ServerLeanLeft(False);
+}
+
+reliable protected server function ServerLeanRight(bool leanstate)
+{
+    bWantsToLeanRight = leanstate;
+
+    if( Pawn != none )
+    {
+        if( ROPawn(Pawn) != none )
+        {
+            if (leanstate)
+            {
+                ROPawn(Pawn).LeanRight();
+            }
+            else
+            {
+                ROPawn(Pawn).LeanRightReleased();
+                bWantsToLeanRight = false;
+
+                if( bWantsToLeanLeft )
+                {
+                    SetTimer(0.2f, false, 'RightLeftLean');
+                }
+            }
+        }
+        else if ( leanstate && ROVWeap_TankTurret(ROWeaponPawn(Pawn).MyVehicleWeapon) != none )
+        {
+            bWantsToLeanRight = false;
+            ROVWeap_TankTurret(ROWeaponPawn(Pawn).MyVehicleWeapon).IncrementRange();
+        }
+    }
+}
+
+reliable protected server function ServerLeanLeft(bool leanstate)
+{
+    bWantsToLeanLeft = leanstate;
+
+    if( Pawn != none )
+    {
+        if( ROPawn(Pawn) != none )
+        {
+            if (leanstate)
+            {
+                ROPawn(Pawn).LeanLeft();
+            }
+            else
+            {
+                ROPawn(Pawn).LeanLeftReleased();
+
+                if( bWantsToLeanRight )
+                {
+                    SetTimer(0.2f, false, 'LeftRightLean');
+                }
+            }
+        }
+        else if ( leanstate && ROVWeap_TankTurret(ROWeaponPawn(Pawn).MyVehicleWeapon) != none )
+        {
+            bWantsToLeanLeft = false;
+            ROVWeap_TankTurret(ROWeaponPawn(Pawn).MyVehicleWeapon).DecrementRange();
+        }
+    }
+}
+
 exec function Camera(name NewMode)
 {
     ServerCamera(NewMode);

@@ -58,5 +58,5 @@ DefaultProperties
     bExplodeOnDeflect=true
     bExplodeWhenHittingInfantry=true
 
-    ProjExplosionTemplate=ParticleSystem'FX_WEP_Explosive_Three.FX_VEH_Explosive_C_TankCannon_HE_Shell_Impact_Dirt'
+    ProjExplosionTemplate=ParticleSystem'PM_FX_WEP_Explosive.FX_VEH_Explosive_C_TankCannon_HE_Shell_Impact_Dirt'
 }

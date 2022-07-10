@@ -137,79 +137,81 @@ DefaultProperties
     DestroyedSkeletalMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Destroyed_Master'
     DestroyedSkeletalMeshWithoutTurret=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Body_Destroyed_Master'
     DestroyedPhysicsAsset=PhysicsAsset'PM_VH_Panzer_IVG.Phys.Ger_PZIV_Destroyed_Physics'
-    DestroyedMaterial=MaterialInstanceConstant'PM_VH_Panzer_IVG.Materials.PM_VH_Panzer_IVG_Destroyed_Mic'
+    DestroyedMaterial=MaterialInstanceConstant'PM_VH_Panzer_IVG.Materials.VH_Ger_Panzer_IVG_Destroyed_Mic'
     DestroyedFXMaterial=Material'PM_M_Vehicles.M_Common_Vehicles.Tank_Fireplanes'
     DestroyedTurretClass=class'PMVehicleDeathTurret_PanzerIVG'
 
     // HUD
-    HUDBodyTexture=Texture2D'ui_textures.HUD.Vehicles.ui_hud_tank_pz4_body'
-    HUDTurretTexture=Texture2D'ui_textures.HUD.Vehicles.ui_hud_tank_pz4_turret'
-    DriverOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_optics_PZIV_driver'
-    HUDMainCannonTexture=Texture2D'ui_textures.HUD.Vehicles.ui_hud_tank_GunPZ'
-    HUDGearBoxTexture=Texture2D'ui_textures.HUD.Vehicles.ui_hud_tank_transmition_PZ'
-    HUDFrontArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_front'
-    HUDBackArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_back'
-    HUDLeftArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_left'
-    HUDRightArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_right'
-    HUDTurretFrontArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretfront'
-    HUDTurretBackArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretback'
-    HUDTurretLeftArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretleft'
-    HUDTurretRightArmorTexture=Texture2D'ui_textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretright'
+    HUDBodyTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_hud_tank_pz4_body'
+    HUDTurretTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_hud_tank_pz4_turret'
+    DriverOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_optics_PZIV_driver'
+    HUDMainCannonTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_hud_tank_GunPZ'
+    HUDGearBoxTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_hud_tank_transmition_PZ'
+    HUDFrontArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_front'
+    HUDBackArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_back'
+    HUDLeftArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_left'
+    HUDRightArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_right'
+    HUDTurretFrontArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretfront'
+    HUDTurretBackArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretback'
+    HUDTurretLeftArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretleft'
+    HUDTurretRightArmorTexture=Texture2D'PM_UI_Textures.HUD.Vehicles.ui_tank_hud_PZ4armor_turretright'
 
-    RoleSelectionImage=Texture2D'ui_textures.Textures.ger_tank_pzIVg'
+    RoleSelectionImage=Texture2D'PM_UI_Textures.RoleSelection.Textures.ger_tank_pzIVg'
+
+    // TODO: add crew mesh/gear/headgear stuff etc.
 
     // Driver
     SeatProxies(0)={(
-        TunicMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker',
-        HeadGearMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tank_headgear',
-        HeadAndArmsMeshType=SkeletalMesh'CHR_Ger_RawRecruit_Heads.Mesh.ger_rr_head_A01',
-        HeadphonesMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker_equipment',
-        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_Ger_RawRecruit_Heads.Materials.Ger_Rank3_Head01_M',
-        BodyMICTemplate=MaterialInstanceConstant'CHR_Ger_Tanker.Materials.Ger_Rank3_Tanker_M',
+        TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
+        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
+        HeadphonesMeshType=none,
+        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
+        BodyMICTemplate=MaterialInstanceConstant'CHR_VN_US_Army.Materials.M_US_Tunic_Long_INST',
         SeatIndex=0,
         PositionIndex=1)}
 
     // Commander
     SeatProxies(1)={(
-        TunicMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker',
-        HeadGearMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tank_headgear',
-        HeadAndArmsMeshType=SkeletalMesh'CHR_Ger_RawRecruit_Heads.Mesh.ger_rr_head_A02',
-        HeadphonesMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker_equipment',
-        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_Ger_RawRecruit_Heads.Materials.Ger_Rank3_Head02_M',
-        BodyMICTemplate=MaterialInstanceConstant'CHR_Ger_Tanker.Materials.Ger_Rank3_Tanker_M',
+        TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
+        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
+        HeadphonesMeshType=none,
+        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
+        BodyMICTemplate=MaterialInstanceConstant'CHR_VN_US_Army.Materials.M_US_Tunic_Long_INST',
         SeatIndex=1,
         PositionIndex=1)}
 
     // Hull MG
     SeatProxies(2)={(
-        TunicMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker',
-        HeadGearMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tank_headgear',
-        HeadAndArmsMeshType=SkeletalMesh'CHR_Ger_RawRecruit_Heads.Mesh.ger_rr_head_A06',
-        HeadphonesMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker_equipment',
-        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_Ger_RawRecruit_Heads.Materials.Ger_Rank3_Head06_M',
-        BodyMICTemplate=MaterialInstanceConstant'CHR_Ger_Tanker.Materials.Ger_Rank3_Tanker_M',
+        TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
+        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
+        HeadphonesMeshType=none,
+        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
+        BodyMICTemplate=MaterialInstanceConstant'CHR_VN_US_Army.Materials.M_US_Tunic_Long_INST',
         SeatIndex=3,
         PositionIndex=2)}
 
     // Loader
     SeatProxies(3)={(
-        TunicMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker',
-        HeadGearMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tank_headgear',
-        HeadAndArmsMeshType=SkeletalMesh'CHR_Ger_RawRecruit_Heads.Mesh.ger_rr_head_A04',
-        HeadphonesMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker_equipment',
-        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_Ger_RawRecruit_Heads.Materials.Ger_Rank3_Head04_M',
-        BodyMICTemplate=MaterialInstanceConstant'CHR_Ger_Tanker.Materials.Ger_Rank3_Tanker_M',
+        TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
+        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
+        HeadphonesMeshType=none,
+        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
+        BodyMICTemplate=MaterialInstanceConstant'CHR_VN_US_Army.Materials.M_US_Tunic_Long_INST',
         SeatIndex=4,
         PositionIndex=0)}
 
     // Gunner
     SeatProxies(4)={(
-        TunicMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker',
-        HeadGearMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tank_headgear',
-        HeadAndArmsMeshType=SkeletalMesh'CHR_Ger_RawRecruit_Heads.Mesh.ger_rr_head_A05',
-        HeadphonesMeshType=SkeletalMesh'CHR_Ger_Tanker.Mesh.ger_tanker_equipment',
-        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_Ger_RawRecruit_Heads.Materials.Ger_Rank3_Head05_M',
-        BodyMICTemplate=MaterialInstanceConstant'CHR_Ger_Tanker.Materials.Ger_Rank3_Tanker_M',
+        TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
+        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
+        HeadphonesMeshType=none,
+        HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
+        BodyMICTemplate=MaterialInstanceConstant'CHR_VN_US_Army.Materials.M_US_Tunic_Long_INST',
         SeatIndex=2,
         PositionIndex=0)}
 

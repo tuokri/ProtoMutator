@@ -1390,7 +1390,8 @@ DefaultProperties
                 )}
 
     Seats(1)={( TurretVarPrefix="Cuppola",
-                BinocOverlayTexture=Texture2D'WP_Sov_Binoculars.Materials.BINOC_overlay',
+                // TODO: is VC binoc texture ok?
+                BinocOverlayTexture=Texture2D'WP_VN_VC_Binoculars.Materials.BINOC_overlay',
                 BarTexture=Texture2D'ui_textures.Textures.button_128grey',
                 CameraTag=None,
                 CameraOffset=-420,
@@ -1432,10 +1433,10 @@ DefaultProperties
                 )}
 
     Seats(2)={( GunClass=class'PMVWeap_PanzerIVG_Turret',
-                SightOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg',
-                NeedleOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg_TOP',
-                RangeOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_range',
-                VignetteOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_optics_vignette',
+                SightOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg',
+                NeedleOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg_TOP',
+                RangeOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_range',
+                VignetteOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_optics_vignette',
                 GunSocket=(Barrel,CoaxMG),
                 GunPivotPoints=(gun_base,gun_base),
                 TurretVarPrefix="Turret",
@@ -1476,8 +1477,8 @@ DefaultProperties
                 )}
 
     Seats(3)={( GunClass=class'PMVWeap_PanzerIVG_HullMG',
-                SightOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_optics_mg',
-                VignetteOverlayTexture=Texture2D'ui_textures.VehicleOptics.ui_hud_vehicle_optics_vignette',
+                SightOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_optics_mg',
+                VignetteOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_optics_vignette',
                 GunSocket=(MG_Barrel),
                 GunPivotPoints=(MG_Pitch),
                 TurretVarPrefix="HullMG",
