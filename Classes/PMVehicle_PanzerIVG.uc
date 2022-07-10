@@ -1281,7 +1281,7 @@ function TankIntDamTest(int MIC, int DamageArea, Float Amount)
 
 `endif
 
-defaultproperties
+DefaultProperties
 {
     Health=600
     MaxSpeed=573    // 42 km/h
@@ -2031,5 +2031,5 @@ defaultproperties
     SpeedoMaxDegree=60075
     SpeedoMaxSpeed=1365 //100 km/h
 
-    RanOverDamageType=RODmgType_RunOver_Panzer4
+    RanOverDamageType=PMDmgType_RunOver_Panzer4
 }

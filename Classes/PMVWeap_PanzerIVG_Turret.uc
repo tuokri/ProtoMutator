@@ -44,7 +44,7 @@ DefaultProperties
     // MAIN FIREMODE
     FiringStatesArray(0)=WeaponSingleFiring
     WeaponFireTypes(0)=EWFT_Projectile
-    WeaponProjectiles(0)=class'VehProj_PanzerIVG_AP'
+    WeaponProjectiles(0)=class'PMVehProj_PanzerIVG_AP'
     FireInterval(0)=+5.0
     Spread(0)=0.0001
 
@@ -77,8 +77,8 @@ DefaultProperties
 //  WeaponFireWaveForm=ForceFeedbackWaveformShooting1
 
     // Main Gun Ammo
-    MainGunProjectiles(MAINGUN_AP_INDEX)=class'VehProj_PanzerIVG_AP'
-    MainGunProjectiles(MAINGUN_HE_INDEX)=class'VehProj_PanzerIVG_HE'
+    MainGunProjectiles(MAINGUN_AP_INDEX)=class'PMVehProj_PanzerIVG_AP'
+    MainGunProjectiles(MAINGUN_HE_INDEX)=class'PMVehProj_PanzerIVG_HE'
     HEAmmoCount=42
     APAmmoCount=42
     SmokeAmmoCount=3
