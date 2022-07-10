@@ -19,6 +19,13 @@ enum EDeadVehicleType
     EDVT_FireCrewEscapeFailed,              // 5
 };
 
+/*
+simulated function PostBeginPlay()
+{
+    super.PostBeginPlay();
+}
+*/
+
 // Get engine output level for SoundCue parameters.
 // Adapted from ROVehicle native C++ version.
 // TODO: when adding SoundCue back-port code here, check this again!
@@ -101,6 +108,10 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
     {
         // Force the driver's view rotation to default to forward instead of some arbitrary angle
         ROPC.SetRotation(rot(0,0,0));
+        // TODO: Added this because the above statement is not enough.
+        //       But WHY is it not enough?
+        ROPC.ClientSetRotation(rot(0,0,0));
+
         // Set Interior engine sounds. Exterior sounds are called by ROPawn.StopDriving
         // TODO: HELOSTUFF, CHECK THIS.
         // SetInteriorEngineSound(true);
@@ -188,16 +199,25 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
     }
 }
 
-// NOTE: From ROVehicleHelicopter.
-simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility)
+// NOTE: From ROVehicleHelicopter with some additions.
+// NOTE: Only use bForceCreateProxy when initially spawning the tank!
+/**
+ * Spawn or update a single proxy for playing death animations on. Match the outfit to that of the Pawn in the same seat
+ */
+simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility,
+    optional bool bForceCreateProxy = false)
 {
     local int i;
     local VehicleCrewProxy CurrentProxyActor;
     local bool bSetMeshRequired;
     local ROMapInfo ROMI;
+    local bool bPlayerEnterableSeat;
+
+    `pmlog("SeatIndex=" $ SeatIndex " ROP=" $ ROP $ " bInternalVisibility="
+        $ bInternalVisibility $ " bForceCreateProxy=" $ bForceCreateProxy);
 
     // Don't spawn the seat proxy actors on the dedicated server (at least for now).
-    if( WorldInfo == none || WorldInfo.NetMode == NM_DedicatedServer )
+    if (WorldInfo == none || WorldInfo.NetMode == NM_DedicatedServer)
     {
         return;
     }
@@ -210,21 +230,22 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
         return;
     }
 
-    for ( i = 0; i < SeatProxies.Length; i++ )
+    for (i = 0; i < SeatProxies.Length; i++)
     {
-        // Only create a proxy for the seat the player has entered, or any seats where players can never enter
-        if( (SeatIndex == i && ROP != none) || Seats[SeatProxies[i].SeatIndex].bNonEnterable )
+        // Only create a proxy for the seat the player has entered, or any seats where players can never enter.
+        // OR if bForceCreateProxy is set. Caution: only use bForceCreateProxy when spawning tanks!
+        if (bForceCreateProxy || ((SeatIndex == i) && (ROP != none)) || Seats[SeatProxies[i].SeatIndex].bNonEnterable)
         {
             bSetMeshRequired = false;
 
-            // Dismemberment causes serious problems in native code if we try to reuse the existing mesh, so destroy it and create a new one instead
-            if( SeatProxies[i].ProxyMeshActor != none && SeatProxies[i].ProxyMeshActor.bIsDismembered )
+            // Dismemberment causes serious problems in native code if we try to reuse the existing mesh, so destroy it and create a new one instead.
+            if (SeatProxies[i].ProxyMeshActor != none && SeatProxies[i].ProxyMeshActor.bIsDismembered)
             {
                 SeatProxies[i].ProxyMeshActor.Destroy();
                 SeatProxies[i].ProxyMeshActor = none;
             }
 
-            if( SeatProxies[i].ProxyMeshActor == none )
+            if (SeatProxies[i].ProxyMeshActor == none)
             {
                 SeatProxies[i].ProxyMeshActor = Spawn(class'PMVehicleCrewProxy',self);
                 SeatProxies[i].ProxyMeshActor.MyVehicle = self;
@@ -256,28 +277,31 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
                 CurrentProxyActor = SeatProxies[i].ProxyMeshActor;
             }
 
-            if(CurrentProxyActor != none)
+            if (CurrentProxyActor != none)
             {
                 CurrentProxyActor.bExposedToRain = (ROMI != none && ROMI.RainStrength != RAIN_None) && SeatProxies[i].bExposedToRain;
             }
 
-            // Create the proxy mesh.
-            if( !Seats[SeatProxies[i].SeatIndex].bNonEnterable )
+            bPlayerEnterableSeat = !Seats[SeatProxies[i].SeatIndex].bNonEnterable;
+
+            // Create the proxy mesh for player-enterable seat from the Pawn.
+            if (bPlayerEnterableSeat && !bForceCreateProxy)
             {
                 CurrentProxyActor.ReplaceProxyMeshWithPawn(ROP);
             }
-            else if( bSetMeshRequired )
+            // Create it from the SeatProxy default mesh.
+            else if (bSetMeshRequired)
             {
                 CurrentProxyActor.CreateProxyMesh(SeatProxies[i]);
             }
 
             // Override the animation set.
-            if ( SeatProxyAnimSet != None )
+            if (SeatProxyAnimSet != None)
             {
                 CurrentProxyActor.Mesh.AnimSets[0] = SeatProxyAnimSet;
             }
 
-            if( bInternalVisibility )
+            if (bInternalVisibility)
             {
                 SetSeatProxyVisibilityInterior();
             }
@@ -286,18 +310,64 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
                 SetSeatProxyVisibilityExterior();
             }
 
-            if (!Seats[SeatProxies[i].SeatIndex].bNonEnterable)
+            // Player-enterable seat.
+            if (bPlayerEnterableSeat && !bForceCreateProxy)
             {
                 CurrentProxyActor.HideMesh(true);
             }
+            // Non-enterable (loaders, etc.).
             else
             {
+                // CurrentProxyActor.HideMesh(false); TODO: don't need to call this since it is the default state?
                 CurrentProxyActor.UpdateVehicleIK(self, SeatProxies[i].SeatIndex, SeatProxies[i].PositionIndex);
                 if (SeatProxies[i].Health > 0)
                 {
                     ChangeCrewCollision(true, SeatProxies[i].SeatIndex);
                 }
             }
+        }
+    }
+}
+
+// NOTE: Overridden to use SpawnOrReplaceSeatProxy().
+// TODO: Is this needed? Looks like we're doing all this twice now?
+/**
+ * Spawn the SeatProxy ProxyMeshActors on the client for SeatProxies you could
+ * possibly see in third person.
+ */
+simulated function SpawnExternallyVisibleSeatProxies()
+{
+    local int i;
+    local int j;
+    local bool bCanBecomeVisible;
+
+    `pmlog("spawning externally visible seat proxies...");
+
+    // Don't spawn the seat proxy actors on the dedicated server (at least for now).
+    if( WorldInfo.NetMode == NM_DedicatedServer )
+    {
+        return;
+    }
+
+    for (i = 0; i < SeatProxies.Length; i++)
+    {
+        bCanBecomeVisible = false;
+
+        for (j = 0; j < Seats[SeatProxies[i].SeatIndex].SeatPositions.Length; j++)
+        {
+            if ((Seats[SeatProxies[i].SeatIndex].SeatPositions[j].SeatProxyIndex == i)
+                && Seats[SeatProxies[i].SeatIndex].SeatPositions[j].bDriverVisible)
+            {
+                bCanBecomeVisible = true;
+                break;
+            }
+        }
+
+        `pmlog("SeatProxies[" $ i $ "]: bCanBecomeVisible=true");
+
+        if ((SeatProxies[i].ProxyMeshActor == None) && bCanBecomeVisible)
+        {
+            SpawnOrReplaceSeatProxy(i, None, false, true);
         }
     }
 }
@@ -313,6 +383,8 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
 simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
 {
     local int i;
+
+    `pmlog("DriverIndex=" $ DriverIndex);
 
     for (i = 0; i < SeatProxies.Length; i++)
     {
@@ -809,6 +881,100 @@ simulated function FinishTransition(int SeatTransitionedTo)
     Seats[SeatTransitionedTo].TransitionProxy = none;
 }
 
+// NOTE: Added ReviveProxies() call similarly to ROVehicleHelicopter.
+/**
+ * Repair all of the damaged armor and internal hit zones in the vehicle
+ *
+ * @return  returns true if any repairs were done
+ */
+function bool FullyRepairVehicle()
+{
+    local bool bDidSomeRepairs;
+
+    bDidSomeRepairs = super.FullyRepairVehicle();
+    ReviveProxies();
+
+    return bDidSomeRepairs;
+}
+
+// NOTE: From ROVehicleHelicopter.
+/**
+ * Bring dead seat proxies back to life
+ * @return true if any proxies were brought back to life
+ */
+simulated function bool ReviveProxies()
+{
+    local int i, ProxySeatIdx;
+    local bool bDidRevive;
+
+    for ( i = 0; i < SeatProxies.Length; i++ )
+    {
+        if( SeatProxies[i].Health < 100 && !SeatbDriving(SeatProxies[i].SeatIndex,,true) )
+        {
+            ProxySeatIdx = SeatProxies[i].SeatIndex;
+
+            UpdateSeatProxyHealth(i, 100);
+
+            if( Seats[ProxySeatIdx].bNonEnterable )
+            {
+                ChangeCrewCollision(true, ProxySeatIdx);
+            }
+
+            SpawnOrReplaceSeatProxy( ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle() );
+
+            bDidRevive = true;
+        }
+    }
+
+    // NOTE: HELOSTUFF.
+    // If the copilot is currently active in a proxy copilot type aircraft, reset the enterable seats
+    /*
+    if( bCopilotCanFly && default.Seats[SeatIndexCopilot].bNonEnterable && !Seats[SeatIndexCopilot].bNonEnterable )
+    {
+        if( Role == ROLE_Authority )
+        {
+            SetCopilotEnterable(false);
+        }
+        SetTimer(0.25, false, 'DelayedMoveCopilotToPilot');
+    }
+
+    CritComponentDestroyer = none;
+    */
+
+    return bDidRevive;
+}
+
+// NOTE: From ROVehicleHelicopter.
+/**
+ * This function is called when the driver's status has changed.
+ */
+simulated function DrivingStatusChanged()
+{
+    //local ROPlayerController ROPC;
+
+    // NOTE: Ignore ROVehicleTank::DrivingStatusChanged.
+    super(ROVehicleTreaded).DrivingStatusChanged();
+
+    /*ROPC = ROPlayerController(Driver.Controller);
+
+    // Couldn't find the Controller for the driver, check the Vehicle
+    if( ROPC == none )
+    {
+        ROPC = ROPlayerController(Controller);
+    }
+    */
+    // Update the pilot's hit detection
+    ChangeCrewCollision(bDriving, 0);
+}
+
+// NOTE: Overridden on purpose to do nothing. Use SpawnOrReplaceSeatProxy() instead.
+simulated function SpawnSeatProxies()
+{
+    `pmlog("*** *** WARNING *** *** old function SpawnSeatProxies() called! Script trace:\n"
+        $ GetScriptTrace() $ "\n\n*** *** WARNING *** ***");
+    ClientMessage("WARNING: SpawnSeatProxies() called, check the log!");
+}
+
 /**
  * Call this function to blow up the vehicle
  */
@@ -905,6 +1071,7 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
     local int i;
     local string HiddenStatusStr;
     local SeatProxy SP;
+    local VehicleSeat VS;
     local ROSkeletalMeshComponent SM;
 
     `pmlog(Msg $ ": SeatProxies:");
@@ -923,7 +1090,20 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
         }
 
         `log("  SeatProxies[" $ i $ "]: Health=" $ SP.Health $ " SeatIndex= " $ SP.SeatIndex
-            $ " PositionIndex=" $ SP.PositionIndex $ " HiddenGame= " $ HiddenStatusStr $ " ProxyMeshActor=" $ SP.ProxyMeshActor);
+            $ " PositionIndex=" $ SP.PositionIndex $ " HiddenGame= " $ HiddenStatusStr
+            $ " ProxyMeshActor=" $ SP.ProxyMeshActor);
+    }
+    `log("**** **** **** **** **** ****");
+
+    `pmlog(Msg $ ": Seats:");
+    `log("**** **** **** **** **** ****");
+    for (i = 0; i < Seats.Length; ++i)
+    {
+        VS = Seats[i];
+
+        `log("  Seats[" $ i $ "]: StoragePawn=" $ " bNonEnterable=" $ VS.bNonEnterable $ VS.StoragePawn
+            $ " Controller=" $ VS.StoragePawn.Controller
+            $ " SeatPawn(Weapon)=" $ VS.SeatPawn);
     }
     `log("**** **** **** **** **** ****");
 }

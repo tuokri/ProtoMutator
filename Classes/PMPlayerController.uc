@@ -204,7 +204,7 @@ exec function SpawnVehicle(string TankContentClass)
 
 exec function SpawnPanzerIVG()
 {
-    SpawnVehicle("ProtoMutator.PMVehicleTank_PanzerIVG_Content");
+    SpawnVehicle("ProtoMutator.PMVehicle_PanzerIVG_Content");
 }
 
 reliable server function ServerSpawnVehicle(string TankContentClass)
