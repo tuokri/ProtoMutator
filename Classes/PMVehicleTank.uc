@@ -1,3 +1,5 @@
+// TODO: Add custom SoundCue support.
+// TODO: Add custom material support.
 // ROVehicleTank with some useful code taken from ROVehicleHelicopter.
 class PMVehicleTank extends ROVehicleTank;
 

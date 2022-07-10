@@ -7,7 +7,6 @@ DefaultProperties
 
     Begin Object Name=ROSVehicleMesh
         SkeletalMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Rig_Master'
-        //MorphSets[0]=MorphTargetSet'VH_Goliath.Mesh.SK_VH_Goliath_Morph'
         AnimTreeTemplate=AnimTree'PM_VH_Panzer_IVG.Anim.AT_VH_PanzerIVG_New'
         PhysicsAsset=PhysicsAsset'PM_VH_Panzer_IVG.Phys.Ger_PZIV_Rig_new_Physics'
         AnimSets.Add(AnimSet'PM_VH_Panzer_IVG.Anim.PZIV_anim_Master')
@@ -139,7 +138,7 @@ DefaultProperties
     DestroyedSkeletalMeshWithoutTurret=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.Ger_PZIV_Body_Destroyed_Master'
     DestroyedPhysicsAsset=PhysicsAsset'PM_VH_Panzer_IVG.Phys.Ger_PZIV_Destroyed_Physics'
     DestroyedMaterial=MaterialInstanceConstant'PM_VH_Panzer_IVG.Materials.PM_VH_Panzer_IVG_Destroyed_Mic'
-    DestroyedFXMaterial=Material'Vehicle_Mats.M_Common_Vehicles.Tank_Fireplanes'
+    DestroyedFXMaterial=Material'PM_M_Vehicles.M_Common_Vehicles.Tank_Fireplanes'
     DestroyedTurretClass=class'PMVehicleDeathTurret_PanzerIVG'
 
     // HUD

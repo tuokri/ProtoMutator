@@ -1468,7 +1468,7 @@ DefaultProperties
                 FiringPositionIndex=1,
 //              SeatIconPos=(X=0.33,Y=0.35),
                 TracerFrequency=5,
-                WeaponTracerClass=(none,class'MG34BulletTracer'),
+                WeaponTracerClass=(none,class'PMBullet_MG34_Tracer'),
                 MuzzleFlashLightClass=(class'ROGrenadeExplosionLight',class'ROVehicleMGMuzzleFlashLight'),
                 SeatRotation=(Pitch=0,Yaw=16384,Roll=0),
                 VehicleBloodMICParameterName=Gore01,
@@ -1521,7 +1521,7 @@ DefaultProperties
                 VehicleBloodMICParameterName=Gore03,
 //              SeatIconPos=(X=0.33,Y=0.35),
                 TracerFrequency=5,
-                WeaponTracerClass=(class'MG34BulletTracer',class'MG34BulletTracer'),
+                WeaponTracerClass=(class'PMBullet_MG34_Tracer',class'PMBullet_MG34_Tracer'),
                 MuzzleFlashLightClass=(class'ROVehicleMGMuzzleFlashLight',class'ROVehicleMGMuzzleFlashLight'),
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
@@ -1732,10 +1732,10 @@ DefaultProperties
     // Muzzle Flashes
     VehicleEffects(TankVFX_Firing1)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankMuzzle',EffectSocket=Barrel,bRestartRunning=true)
     VehicleEffects(TankVFX_Firing2)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankCannon_Dust',EffectSocket=attachments_body_ground,bRestartRunning=true)
-    VehicleEffects(TankVFX_Firing3)=(EffectStartTag=PanzerIVGHullMG,EffectTemplate=ParticleSystem'FX_MuzzleFlashes.Emitters.muzzleflash_3rdP',EffectSocket=MG_Barrel)
-    VehicleEffects(TankVFX_Firing4)=(EffectStartTag=PanzerIVGCoaxMG,EffectTemplate=ParticleSystem'FX_MuzzleFlashes.Emitters.muzzleflash_3rdP',EffectSocket=CoaxMG)
+    VehicleEffects(TankVFX_Firing3)=(EffectStartTag=PanzerIVGHullMG,EffectTemplate=ParticleSystem'FX_VN_Weapons.MuzzleFlashes.FX_VN_MuzzleFlash_3rdP_Rifles_round',EffectSocket=MG_Barrel)
+    VehicleEffects(TankVFX_Firing4)=(EffectStartTag=PanzerIVGCoaxMG,EffectTemplate=ParticleSystem'FX_VN_Weapons.MuzzleFlashes.FX_VN_MuzzleFlash_3rdP_Rifles_round',EffectSocket=CoaxMG)
     // Driving effects
-    VehicleEffects(TankVFX_Exhaust)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,EffectTemplate=ParticleSystem'FX_VEH_Tank.FX_VEH_Tank_A_TankExhaust',EffectSocket=Exhaust)
+    VehicleEffects(TankVFX_Exhaust)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_TankExhaust',EffectSocket=Exhaust)
     VehicleEffects(TankVFX_TreadWing)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,bStayActive=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Wing_Dirt_PZ4',EffectSocket=attachments_body_ground)
     // Damage
     VehicleEffects(TankVFX_DmgSmoke)=(EffectStartTag=DamageSmoke,EffectEndTag=NoDamageSmoke,bRestartRunning=false,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Damage',EffectSocket=attachments_engine)
