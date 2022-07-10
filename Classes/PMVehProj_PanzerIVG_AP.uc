@@ -29,6 +29,7 @@ DefaultProperties
 
     Begin Object Class=StaticMeshComponent Name=ProjectileMesh
         StaticMesh=StaticMesh'PM_VH_Panzer_IVG.Mesh.Panzer_IVG_Warhead'
+        Materials(0)=MaterialInstanceConstant'PM_VH_Panzer_IVG.Materials.Panzer_IVG_Warhead_MIC'
         MaxDrawDistance=500000
         CollideActors=true
         CastShadow=false

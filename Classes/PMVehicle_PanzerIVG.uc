@@ -38,7 +38,8 @@ var repnotify TakeHitInfo DeathHitInfo_ProxyGunner;
 replication
 {
     if (bNetDirty)
-        DeathHitInfo_ProxyDriver, DeathHitInfo_ProxyCommander, DeathHitInfo_ProxyHullMG, DeathHitInfo_ProxyLoader, DeathHitInfo_ProxyGunner, CuppolaCurrentPositionIndex, bDrivingCuppola;
+        DeathHitInfo_ProxyDriver, DeathHitInfo_ProxyCommander, DeathHitInfo_ProxyHullMG,
+        DeathHitInfo_ProxyLoader, DeathHitInfo_ProxyGunner, CuppolaCurrentPositionIndex, bDrivingCuppola;
 }
 
 /**
@@ -567,6 +568,9 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
     local float AnimTimer;
     local name TransitionAnim, TimerName;
 
+    `pmlog("DriverPawn=" $ DriverPawn $ " NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex="
+        $ OldSeatIndex $ " bInstantTransition=" $ bInstantTransition);
+
     super.HandleSeatTransition(DriverPawn, NewSeatIndex, OldSeatIndex, bInstantTransition);
 
     if( bInstantTransition )
@@ -737,10 +741,13 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
 {
     local bool bAttachProxy;
     local float AnimTimer;
-    local name TransitionAnim, TimerName;
+    local name TransitionAnim;
+    local name TimerName;
     local VehicleCrewProxy VCP;
     local bool bTransitionWithoutProxy;
     local bool bUseExteriorAnim;
+
+    `pmlog("NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex);
 
     super.HandleProxySeatTransition(NewSeatIndex, OldSeatIndex);
 
@@ -748,17 +755,17 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
 
     bUseExteriorAnim = IsSeatPositionOutsideTank(OldSeatIndex);
 
-    // if there is no proxy it is likely the dedicated server. Set a flag
+    // If there is no proxy it is likely the dedicated server. Set a flag
     // so we know we are doing the transition without a proxy
-    if( VCP == none )
+    if (VCP == none)
     {
         bTransitionWithoutProxy = true;
     }
 
-    // Moving out of the driver seat
-    if( OldSeatIndex == 0 )
+    // Moving out of the driver seat.
+    if (OldSeatIndex == 0)
     {
-        // Transition from driver to commander
+        // Transition from driver to commander.
         if( NewSeatIndex == 1 )
         {
             TransitionAnim = (bUseExteriorAnim) ? 'Driver_Open_TranTurret' : 'Driver_TranTurret';
@@ -920,14 +927,14 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
         VCP.SetRelativeRotation( Seats[NewSeatIndex].SeatRotation );
     }
 
-    if( bTransitionWithoutProxy )
+    if (bTransitionWithoutProxy)
     {
-       // Set up the transition timer
-       AnimTimer = SeatProxyAnimSet.GetAnimLength(TransitionAnim);
+        // Set up the transition timer.
+        AnimTimer = SeatProxyAnimSet.GetAnimLength(TransitionAnim);
     }
     else
     {
-        // Set up the transition and animation
+        // Set up the transition and animation.
         AnimTimer = VCP.Mesh.GetAnimLength(TransitionAnim);
     }
 
@@ -936,13 +943,16 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
     Seats[NewSeatIndex].bTransitioningToSeat = true;
     Seats[NewSeatIndex].PositionBlend.HandleAnimPlay(TransitionAnim, false);
 
-    if( !bTransitionWithoutProxy )
+    if (!bTransitionWithoutProxy)
     {
        VCP.PlayFullBodyAnimation(TransitionAnim, 0.f);
     }
 
-    // Set up the timer for ending the transition
+    // Set up the timer for ending the transition.
     SetTimer(AnimTimer, false, TimerName);
+
+    `pmlog("TransitionAnim=" $ TransitionAnim $ " AnimTimer=" $ AnimTimer
+        $ " bTransitionWithoutProxy=" $ bTransitionWithoutProxy $ " TimerName=" $ TimerName);
 }
 
 /**

@@ -232,6 +232,10 @@ DefaultProperties
     // the exterior.
     //----------------------------------------------------------------
 
+    // NOTE: setting the static mesh materials here because I can't
+    // be arsed to re-import every mesh to be able to apply the materials
+    // to them in the editor.
+
     // -------------- Exterior attachments ------------------//
 
     Begin Object class=StaticMeshComponent name=ExtBodyAttachment0
@@ -342,6 +346,10 @@ DefaultProperties
 
     Begin Object class=StaticMeshComponent name=IntBodyAttachment10
         StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Driver_Side_1'
+        Materials(0)=MaterialInstanceConstant'PM_VH_Panzer_IVG_Interior.Materials.VH_Ger_Panzer_IVG_Int_Turret_Mic'
+        Materials(1)=MaterialInstanceConstant'PM_VH_Panzer_IVG_Interior.Materials.VH_Ger_Panzer_IVG_Int_Tile_Mic'
+        Materials(2)=MaterialInstanceConstant'PM_VH_Panzer_IVG_Interior.Materials.VH_Ger_Panzer_IVG_Int_Driver_Mic'
+        Materials(3)=Material'VH_VN_US_UH1H.Materials.M_WindowGlass_MASTER'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=false
@@ -394,6 +402,10 @@ DefaultProperties
 
     Begin Object class=StaticMeshComponent name=TurretAttachment2
         StaticMesh=StaticMesh'PM_VH_Panzer_IVG_Interior.Mesh.VH_SM_PzIVG_Int_Coppola'
+        Materials(0)=MaterialInstanceConstant'PM_VH_Panzer_IVG.Materials.VH_Ger_Panzer_IVG_Mic'
+        Materials(1)=MaterialInstanceConstant'PM_VH_Panzer_IVG_Interior.Materials.VH_Ger_Panzer_IVG_Int_Tile_Mic'
+        Materials(2)=MaterialInstanceConstant'PM_VH_Panzer_IVG_Interior.Materials.VH_Ger_Panzer_IVG_Int_Cuppola_Mic'
+        Materials(3)=Material'VH_VN_US_UH1H.Materials.M_WindowGlass_MASTER'
         LightingChannels=(Dynamic=TRUE,Unnamed_1=TRUE,bInitialized=TRUE)
         LightEnvironment = MyInteriorLightEnvironment
         CastShadow=true
