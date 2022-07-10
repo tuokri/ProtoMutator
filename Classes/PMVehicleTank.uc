@@ -826,7 +826,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
  * directly on the server and in standalone
  */
 // TODO: this is only used in tank replication code. How does this differ from HandleSeatTransition?
-//       Is this only getting called from AI code?
+//       Is this currently only getting called from AI code?
 simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
 {
     `pmlog("NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex);
