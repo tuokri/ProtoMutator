@@ -170,15 +170,15 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
                 ROP.ArmsMesh.SetHidden(true);
             }
 
-            SpawnOrReplaceSeatProxy(SeatIndex, ROP, true);
+            SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, true);
         }
         else if (ROAIController(ROP.Controller) != none && IsLocalPlayerInThisVehicle())
         {
-            SpawnOrReplaceSeatProxy(SeatIndex, ROP, true);
+            SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, true);
         }
         else
         {
-            SpawnOrReplaceSeatProxy(SeatIndex, ROP, false);
+            SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, false);
         }
 
         if ((ROPC != none && ROPC.IsLocalPlayerController() && ROPC.IsFirstPersonCamera()) || IsLocalPlayerInThisVehicle())
@@ -199,12 +199,18 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
     }
 }
 
+// Just a wrapper to call our custom version.
+simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility)
+{
+    SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, bInternalVisibility, false);
+}
+
 // NOTE: From ROVehicleHelicopter with some additions.
 // NOTE: Only use bForceCreateProxy when initially spawning the tank!
 /**
- * Spawn or update a single proxy for playing death animations on. Match the outfit to that of the Pawn in the same seat
+ * Spawn or update a single proxy for playing death animations on. Match the outfit to that of the Pawn in the same seat.
  */
-simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility,
+simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility,
     optional bool bForceCreateProxy = false)
 {
     local int i;
@@ -213,7 +219,7 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
     local ROMapInfo ROMI;
     local bool bPlayerEnterableSeat;
 
-    `pmlog("SeatIndex=" $ SeatIndex " ROP=" $ ROP $ " bInternalVisibility="
+    `pmlog("SeatIndex=" $ SeatIndex $ " ROP=" $ ROP $ " bInternalVisibility="
         $ bInternalVisibility $ " bForceCreateProxy=" $ bForceCreateProxy);
 
     // Don't spawn the seat proxy actors on the dedicated server (at least for now).
@@ -233,7 +239,7 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
     for (i = 0; i < SeatProxies.Length; i++)
     {
         // Only create a proxy for the seat the player has entered, or any seats where players can never enter.
-        // OR if bForceCreateProxy is set. Caution: only use bForceCreateProxy when spawning tanks!
+        // OR if bForceCreateProxy is set. Caution: only use bForceCreateProxy when initially spawning tanks!
         if (bForceCreateProxy || ((SeatIndex == i) && (ROP != none)) || Seats[SeatProxies[i].SeatIndex].bNonEnterable)
         {
             bSetMeshRequired = false;
@@ -310,8 +316,9 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
                 SetSeatProxyVisibilityExterior();
             }
 
-            // Player-enterable seat.
-            if (bPlayerEnterableSeat && !bForceCreateProxy)
+            // Hide player-enterable seat proxies or when force-creating them.
+            // They will be unhidden when needed.
+            if (bPlayerEnterableSeat || bForceCreateProxy)
             {
                 CurrentProxyActor.HideMesh(true);
             }
@@ -329,7 +336,7 @@ simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional b
     }
 }
 
-// NOTE: Overridden to use SpawnOrReplaceSeatProxy().
+// NOTE: Overridden to use SpawnOrReplaceSeatProxyCustom().
 // TODO: Is this needed? Looks like we're doing all this twice now?
 /**
  * Spawn the SeatProxy ProxyMeshActors on the client for SeatProxies you could
@@ -344,7 +351,7 @@ simulated function SpawnExternallyVisibleSeatProxies()
     `pmlog("spawning externally visible seat proxies...");
 
     // Don't spawn the seat proxy actors on the dedicated server (at least for now).
-    if( WorldInfo.NetMode == NM_DedicatedServer )
+    if (WorldInfo.NetMode == NM_DedicatedServer)
     {
         return;
     }
@@ -367,7 +374,7 @@ simulated function SpawnExternallyVisibleSeatProxies()
 
         if ((SeatProxies[i].ProxyMeshActor == None) && bCanBecomeVisible)
         {
-            SpawnOrReplaceSeatProxy(i, None, false, true);
+            SpawnOrReplaceSeatProxyCustom(i, None, false, true);
         }
     }
 }
@@ -535,7 +542,7 @@ simulated function HandleSeatProxyHealthUpdated()
                     SeatProxies[i].ProxyMeshActor.ClearBloodOverlay();
 
                     // Replace it entirely to get rid of gore.
-                    SpawnOrReplaceSeatProxy(ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle());
+                    SpawnOrReplaceSeatProxyCustom(ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle());
 
                     // Hide the proxy if the seat is vacant.
                     if (Seats[ProxySeatIdx].SeatPositions[SeatProxies[i].PositionIndex].bDriverVisible)
@@ -617,6 +624,25 @@ simulated function DetachDriver(Pawn P)
 
 // TODO: refactor this to make the logic easier to read.
 // NOTE: Combined from ROVehicleHelicopter and ROVehicleTank.
+/**
+ * Handle transitions between seats in the vehicle which need to be animated or
+ * swap meshes. Here we handle the specific per vehicle implementation of the
+ * visible animated transitions between seats or the mesh swapped proxy mesh
+ * instant transitions. For animated transitions that involve the turret area,
+ * it performs the first half of the transition, moving them to a position
+ * under the turret area. These transitions must be split into two parts,
+ * since the turret can rotate, we move the players to a position under the
+ * turret that will always be in the same place no matter which direction the
+ * turret is rotated. Then the second half of the transition starts from this
+ * position.
+ *
+ * @param   DriverPawn        The pawn driver that is transitioning seats
+ * @param   NewSeatIndex      The SeatIndex the pawn is moving to
+ * @param   OldSeatIndex      The SeatIndex the pawn is moving from
+ * @param   bInstantTransition    True if this is an instant transition not an animated transition
+ * Network: Called on network clients when the ROPawn Driver's VehicleSeatTransition
+ * is changed. HandleSeatTransition is called directly on the server and in standalone
+ */
 simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int OldSeatIndex, bool bInstantTransition)
 {
     `pmlog("DriverPawn=" $ DriverPawn $ " NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex $ " bInstantTransition=" $ bInstantTransition);
@@ -660,7 +686,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
         }
 
         // TODO: should we call this here or later in this branch??
-        SpawnOrReplaceSeatProxy(NewSeatIndex, DriverPawn, IsLocalPlayerInThisVehicle());
+        SpawnOrReplaceSeatProxyCustom(NewSeatIndex, DriverPawn, IsLocalPlayerInThisVehicle());
 
         // Turn off or on the OLD proxy mesh depending upon the health of the Proxy.
         // TODO: why is ROVehicleTank checking for NetMode here but not for the other hide/unhide calls?
@@ -781,17 +807,37 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
         }
     }
 
-    // NOTE: for animated transitions, SpawnOrReplaceSeatProxy is called in FinishTransition,
+    // NOTE: for animated transitions, SpawnOrReplaceSeatProxyCustom is called in FinishTransition,
     //       which is triggered by a timer, individually in each vehicle's subclass code.
 
     LogSeatProxyStates(self $ "_" $ GetFuncName() $ "(): after");
 }
 
 /**
+ * Handle SeatProxy transitions between seats in the vehicle which need to be
+ * animated or swap meshes. When called on the server the subclasses handle
+ * replicating the information so the animations happen on the client
+ * Since the transitions are very vehicle specific, all of the actual animations,
+ * etc must be implemented in subclasses
+ * @param   NewSeatIndex          The SeatIndex the proxy is moving to
+ * @param   OldSeatIndex          The SeatIndex the proxy is moving from
+ * Network: Called on network clients when the ProxyTransition variables
+ * implemented in subclassare are changed. HandleProxySeatTransition is called
+ * directly on the server and in standalone
+ */
+// TODO: this is only used in tank replication code. How does this differ from HandleSeatTransition?
+//       Is this only getting called from AI code?
+simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
+{
+    `pmlog("NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex);
+    super.HandleProxySeatTransition(NewSeatIndex, OldSeatIndex);
+}
+
+/**
  * Use on the server to update the health of a SeatProxy. This function will
  * set the health of the SeatProxy, and call the function to replicate the
  * health to the client.
- * @param   SeatProxyIndex        The seatproxy you want to Update the health for
+ * @param   SeatProxyIndex        The seat proxy you want to update the health for
  * @param   NewHealth             The value to set the SeatProxy Health to
  */
 function UpdateSeatProxyHealth(int SeatProxyIndex, int NewHealth, optional bool bIsTransition)
@@ -837,7 +883,7 @@ simulated function ChangeCrewCollision(bool bEnable, int SeatIndex)
 */
 
 // Fired by a timer in each vehicle subclass code.
-// NOTE: Added SpawnOrReplaceSeatProxy.
+// NOTE: Added SpawnOrReplaceSeatProxyCustom.
 simulated function FinishTransition(int SeatTransitionedTo)
 {
     local ROPlayerController ROPC;
@@ -864,11 +910,11 @@ simulated function FinishTransition(int SeatTransitionedTo)
         if (P != None)
         {
             // To set correct customization etc...
-            SpawnOrReplaceSeatProxy(SeatTransitionedTo, P, IsLocalPlayerInThisVehicle());
+            SpawnOrReplaceSeatProxyCustom(SeatTransitionedTo, P, IsLocalPlayerInThisVehicle());
         }
         else
         {
-            // If this happens, should we run some default error handling version of SpawnOrReplaceSeatProxy()?
+            // If this happens, should we run some default error handling version of SpawnOrReplaceSeatProxyCustom()?
             // Did the player get kicked/disconnected before the transition ended? Did they exit the vehicle
             // somehow during the transition?
             `pmlog("!!! ERROR !!! SeatTransitionedTo=" $ SeatTransitionedTo $ " ROPC.Pawn is NULL!");
@@ -907,20 +953,20 @@ simulated function bool ReviveProxies()
     local int i, ProxySeatIdx;
     local bool bDidRevive;
 
-    for ( i = 0; i < SeatProxies.Length; i++ )
+    for (i = 0; i < SeatProxies.Length; i++)
     {
-        if( SeatProxies[i].Health < 100 && !SeatbDriving(SeatProxies[i].SeatIndex,,true) )
+        if (SeatProxies[i].Health < 100 && !SeatbDriving(SeatProxies[i].SeatIndex,,true))
         {
             ProxySeatIdx = SeatProxies[i].SeatIndex;
 
             UpdateSeatProxyHealth(i, 100);
 
-            if( Seats[ProxySeatIdx].bNonEnterable )
+            if (Seats[ProxySeatIdx].bNonEnterable)
             {
                 ChangeCrewCollision(true, ProxySeatIdx);
             }
 
-            SpawnOrReplaceSeatProxy( ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle() );
+            SpawnOrReplaceSeatProxyCustom(ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle());
 
             bDidRevive = true;
         }
@@ -967,7 +1013,7 @@ simulated function DrivingStatusChanged()
     ChangeCrewCollision(bDriving, 0);
 }
 
-// NOTE: Overridden on purpose to do nothing. Use SpawnOrReplaceSeatProxy() instead.
+// NOTE: Overridden on purpose to do nothing. Use SpawnOrReplaceSeatProxyCustom() instead.
 simulated function SpawnSeatProxies()
 {
     `pmlog("*** *** WARNING *** *** old function SpawnSeatProxies() called! Script trace:\n"

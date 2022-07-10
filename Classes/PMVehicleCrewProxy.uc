@@ -20,6 +20,30 @@ simulated event OnAnimEnd(AnimNodeSequence SeqNode, float PlayedTime, float Exce
     `pmlog("UpdateVehicleIK called for seat index " $ CurrentSeatProxy.SeatIndex $ " and position index " $ CurrentSeatProxy.PositionIndex);
 }
 
+simulated function PlayFullBodyAnimation(name AnimationName, float BlendTime = 0.1f, bool bLoop = false)
+{
+    `pmlog("AnimationName=" $ AnimationName $ " BlendTime=" $ BlendTime $ " bLoop=" $ bLoop);
+
+    if (AnimationName == '')
+    {
+        `pmlog("WARNING: animation name missing!");
+        ROPlayerController(MyVehicle.Driver.Controller).ClientMessage(
+            self $ "->" $ GetFuncName() $ "(): WARNING: animation name missing!");
+        return;
+    }
+
+    if (FullBodyBlendNode != none && FullBodySequencePlayerNode != none)
+    {
+        FullBodyBlendNode.SetBlendTarget(1.0f, BlendTime);
+        FullBodySequencePlayerNode.SetAnim(AnimationName);
+        FullBodySequencePlayerNode.PlayAnim(bLoop);
+    }
+    else
+    {
+        `log("No full body node available to play full body animation!");
+    }
+}
+
 DefaultProperties
 {
 
