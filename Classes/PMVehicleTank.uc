@@ -26,6 +26,10 @@ simulated function PostBeginPlay()
 }
 */
 
+// TODO: We'll want these in the future.
+function SetPendingDestroyIfEmpty(float WaitToDestroyTime);
+function DestroyIfEmpty();
+
 // Get engine output level for SoundCue parameters.
 // Adapted from ROVehicle native C++ version.
 // TODO: when adding SoundCue back-port code here, check this again!
@@ -1119,6 +1123,8 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
     local SeatProxy SP;
     local VehicleSeat VS;
     local ROSkeletalMeshComponent SM;
+    local Pawn StoragePawn;
+    local Controller StoragePawnController;
 
     `pmlog(Msg $ ": SeatProxies:");
     `log("**** **** **** **** **** ****");
@@ -1146,9 +1152,14 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
     for (i = 0; i < Seats.Length; ++i)
     {
         VS = Seats[i];
+        StoragePawn = VS.StoragePawn;
+        if (StoragePawn != None)
+        {
+            StoragePawnController = StoragePawn.Controller;
+        }
 
-        `log("  Seats[" $ i $ "]: StoragePawn=" $ " bNonEnterable=" $ VS.bNonEnterable $ VS.StoragePawn
-            $ " Controller=" $ VS.StoragePawn.Controller
+        `log("  Seats[" $ i $ "]: StoragePawn=" $ StoragePawn $ " bNonEnterable=" $ VS.bNonEnterable
+            $ " StoragePawnController=" $ StoragePawnController
             $ " SeatPawn(Weapon)=" $ VS.SeatPawn);
     }
     `log("**** **** **** **** **** ****");

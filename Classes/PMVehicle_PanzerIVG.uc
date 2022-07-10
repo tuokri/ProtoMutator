@@ -191,8 +191,8 @@ simulated function RequestPosition(byte SeatIndex, byte DesiredIndex, optional b
     }
 }
 
-/** Check vehicle state for realistic driving restricti
-ons */
+/** Check vehicle state for realistic driving restrictions. */
+// NOTE: prevents driver from driving head out the hatch.
 simulated function bool EnforceDrivingLimitations()
 {
     local ROGameReplicationInfo ROGRI;
@@ -1306,6 +1306,8 @@ DefaultProperties
     bDontUseCollCylinderForRelevancyCheck=true
     RelevancyHeight=90.0
     RelevancyRadius=155.0
+
+    CrewAnimSet=AnimSet'CHR_Playeranim_Master.Anim.CHR_Panzer4G_Anim_Master'
 
     //--------------------------------------------------------
     //                 Interior lights

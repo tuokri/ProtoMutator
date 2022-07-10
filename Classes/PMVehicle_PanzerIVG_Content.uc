@@ -215,7 +215,7 @@ DefaultProperties
         SeatIndex=2,
         PositionIndex=0)}
 
-    // Seat proxy animations
+    // Seat proxy animations.
     SeatProxyAnimSet=AnimSet'CHR_Playeranim_Master.Anim.CHR_Panzer4G_Anim_Master'
 
     //----------------------------------------------------------------
