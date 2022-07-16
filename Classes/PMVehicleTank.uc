@@ -1253,7 +1253,7 @@ simulated function SpawnSeatProxies()
         {
             `pmlog("Seats[" $ i $ "].SeatPawn   = " $ Seats[i].SeatPawn);
 
-            // Found where the local player is sitting.
+            // Found where the local player is sitting. // TODO: THIS DOES NOT WORK!! ROPC.Pawn is the vehicle in certain scenarios...
             if (ROPawn(Seats[i].StoragePawn) == ROPawn(ROPC.Pawn))
             {
                 `pmlog("LocalPlayerSeatIndex        = " $ LocalPlayerSeatIndex);
