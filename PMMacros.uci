@@ -2,3 +2,11 @@
     `log(self.class.name $ "::" $ GetFuncName() $ "(): " $ `msg, \
     `cond, \
     `if(`tag), name("ProtoMutator-" $ string(`tag))`else'ProtoMutator'`endif)
+
+
+// Panzer IVG seat indices.
+`define SI_PZ_IVG_DRIVER    0
+`define SI_PZ_IVG_COMMDR    1
+`define SI_PZ_IVG_GUNNER    2
+`define SI_PZ_IVG_HULLMG    3
+`define SI_PZ_IVG_LOADER    4

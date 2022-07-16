@@ -2,7 +2,7 @@ class PMVehProj_PanzerIVG_HE extends ROTankCannonProjectile;
 
 DefaultProperties
 {
-    AmmoTypeShortName="HE"
+    // AmmoTypeShortName="HE"
 
     BallisticCoefficient=2.0
     Speed=27500 //550 M/S

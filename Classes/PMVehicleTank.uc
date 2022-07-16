@@ -3,6 +3,48 @@
 // ROVehicleTank with some useful code taken from ROVehicleHelicopter.
 class PMVehicleTank extends ROVehicleTank;
 
+var SoundCue ExplosionSoundCustom;
+
+var(Sounds) editconst const AudioComponent EngineSoundCustom;
+var(Sounds) editconst const AudioComponent SquealSoundCustom;
+
+// Engine start sounds.
+var AudioComponent  EngineStartLeftSoundCustom;
+var AudioComponent  EngineStartRightSoundCustom;
+var AudioComponent  EngineStartExhaustSoundCustom;
+var AudioComponent  EngineStopSoundCustom;
+
+var SoundCue EngineIdleSoundCustom;
+var SoundCue EngineIdleDamagedSoundCustom;
+var SoundCue TrackTakeDamageSoundCustom;
+var SoundCue TrackDamagedSoundCustom;
+var SoundCue TrackDestroyedSoundCustom;
+
+// Engine interior cabin sounds.
+var AudioComponent EngineIntLeftSoundCustom;
+var AudioComponent EngineIntRightSoundCustom;
+
+// Tread sounds.
+var AudioComponent  TrackLeftSoundCustom;
+var AudioComponent  TrackRightSoundCustom;
+
+// Tranmission sounds.
+var AudioComponent  BrokenTransmissionSoundCustom;
+
+// Brake sounds.
+var AudioComponent  BrakeLeftSoundCustom;
+var AudioComponent  BrakeRightSoundCustom;
+
+// Gear shift sounds.
+var SoundCue        ShiftUpSoundCustom;
+var SoundCue        ShiftDownSoundCustom;
+var SoundCue        ShiftLeverSoundCustom;
+
+// Turret rotation components.
+var AudioComponent  TurretTraverseSoundCustom;
+var AudioComponent  TurretMotorTraverseSoundCustom;
+var AudioComponent  TurretElevationSoundCustom;
+
 /** AnimTree for characters riding in this vehicle. */
 // TODO: useless variable as it doesn't differ from VehicleCrewProxy default AnimTree...
 var Animtree PassengerAnimTree;
@@ -204,18 +246,22 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
 }
 
 // Just a wrapper to call our custom version.
+// NOTE: SeatIndex here actually refers to SeatProxyIndex.
+//       It is assumed they are both equal for every seat position.
+//       This is not true for RO2 tank code so be careful when porting stuff.
 simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility)
 {
-    SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, bInternalVisibility, false);
+    SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, bInternalVisibility, false, false);
 }
 
+// TODO: Try to simplify this logic.
 // NOTE: From ROVehicleHelicopter with some additions.
 // NOTE: Only use bForceCreateProxy when initially spawning the tank!
 /**
  * Spawn or update a single proxy for playing death animations on. Match the outfit to that of the Pawn in the same seat.
  */
 simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility,
-    optional bool bForceCreateProxy = false)
+    optional bool bForceCreateProxy = false, optional bool bForceSetVisible = false)
 {
     local int i;
     local VehicleCrewProxy CurrentProxyActor;
@@ -243,8 +289,8 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
     for (i = 0; i < SeatProxies.Length; i++)
     {
         // Only create a proxy for the seat the player has entered, or any seats where players can never enter.
-        // OR if bForceCreateProxy is set. Caution: only use bForceCreateProxy when initially spawning tanks!
-        if (bForceCreateProxy || ((SeatIndex == i) && (ROP != none)) || Seats[SeatProxies[i].SeatIndex].bNonEnterable)
+        // OR if bForceCreateProxy OR bForceSetVisible is set. Caution: only use bForceCreateProxy when initially spawning tanks!
+        if ((bForceSetVisible || bForceCreateProxy) || ((SeatIndex == i) && (ROP != none)) || Seats[SeatProxies[i].SeatIndex].bNonEnterable)
         {
             bSetMeshRequired = false;
 
@@ -269,16 +315,16 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
                 CurrentProxyActor.SetLightingChannels(InteriorLightingChannels);
                 CurrentProxyActor.SetLightEnvironment(InteriorLightEnvironment);
 
-                CurrentProxyActor.SetCollision( false, false);
+                CurrentProxyActor.SetCollision(false, false);
                 CurrentProxyActor.bCollideWorld = false;
                 CurrentProxyActor.SetBase(none);
                 CurrentProxyActor.SetHardAttach(true);
-                CurrentProxyActor.SetLocation( Location );
-                CurrentProxyActor.SetPhysics( PHYS_None );
-                CurrentProxyActor.SetBase( Self, , Mesh, Seats[SeatProxies[i].SeatIndex].SeatBone);
+                CurrentProxyActor.SetLocation(Location);
+                CurrentProxyActor.SetPhysics(PHYS_None);
+                CurrentProxyActor.SetBase(Self, , Mesh, Seats[SeatProxies[i].SeatIndex].SeatBone);
 
-                CurrentProxyActor.SetRelativeLocation( vect(0,0,0) );
-                CurrentProxyActor.SetRelativeRotation( Seats[SeatProxies[i].SeatIndex].SeatRotation );
+                CurrentProxyActor.SetRelativeLocation(vect(0,0,0));
+                CurrentProxyActor.SetRelativeRotation(Seats[SeatProxies[i].SeatIndex].SeatRotation);
 
                 bSetMeshRequired = true;
             }
@@ -295,7 +341,7 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
             bPlayerEnterableSeat = !Seats[SeatProxies[i].SeatIndex].bNonEnterable;
 
             // Create the proxy mesh for player-enterable seat from the Pawn.
-            if (bPlayerEnterableSeat && !bForceCreateProxy)
+            if (bPlayerEnterableSeat && !bForceCreateProxy && (ROP != None))
             {
                 CurrentProxyActor.ReplaceProxyMeshWithPawn(ROP);
             }
@@ -320,24 +366,48 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
                 SetSeatProxyVisibilityExterior();
             }
 
-            // Hide player-enterable seat proxies or when force-creating them.
-            // They will be unhidden when needed.
-            if (bPlayerEnterableSeat || bForceCreateProxy)
+            // If bForceSetVisible is True, make the proxy visible if the player is not in the seat!
+            if (bForceSetVisible)
             {
-                CurrentProxyActor.HideMesh(true);
+                if (SeatIndex == i)
+                {
+                    SetProxyMeshVisibility(false, CurrentProxyActor, i, false);
+                }
+                else
+                {
+                    SetProxyMeshVisibility(true, CurrentProxyActor, i, true);
+                }
+            }
+            // Hide player-enterable seat proxies or when force-creating them. They will be unhidden when needed.
+            else if (bPlayerEnterableSeat || bForceCreateProxy)
+            {
+                SetProxyMeshVisibility(false, CurrentProxyActor, i, false);
             }
             // Non-enterable (loaders, etc.).
             else
             {
-                // CurrentProxyActor.HideMesh(false); TODO: don't need to call this since it is the default state?
-                CurrentProxyActor.UpdateVehicleIK(self, SeatProxies[i].SeatIndex, SeatProxies[i].PositionIndex);
-                if (SeatProxies[i].Health > 0)
-                {
-                    ChangeCrewCollision(true, SeatProxies[i].SeatIndex);
-                }
+                SetProxyMeshVisibility(true, CurrentProxyActor, i, true);
             }
         }
     }
+}
+
+// TODO: Should use this in every place that changes proxy actor visibility to update collision too.
+//       We don't use crew collision for anything in tanks yet, but we might want to do that later on.
+simulated function SetProxyMeshVisibility(bool bSetVisible, VehicleCrewProxy ProxyActor, int SeatProxyIndex,
+    optional bool bEnableCrewCollision = True)
+{
+    `pmlog("bSetVisible=" $ bSetVisible $ " ProxyActor=" $ ProxyActor $ " SeatProxyIndex="
+        $ SeatProxyIndex $ " bEnableCrewCollision=" $ bEnableCrewCollision);
+
+    ProxyActor.HideMesh(bSetVisible);
+    ProxyActor.UpdateVehicleIK(self, SeatProxies[SeatProxyIndex].SeatIndex, SeatProxies[SeatProxyIndex].PositionIndex);
+    if ((SeatProxies[SeatProxyIndex].Health <= 0) && bEnableCrewCollision)
+    {
+        bEnableCrewCollision = False;
+        `pmlog("overriding bEnableCrewCollision to False, since SeatProxy is dead!");
+    }
+    ChangeCrewCollision(bEnableCrewCollision, SeatProxies[SeatProxyIndex].SeatIndex);
 }
 
 // NOTE: Overridden to use SpawnOrReplaceSeatProxyCustom().
@@ -416,11 +486,11 @@ simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
         else
         {
             // Unhide this mesh if no pawn is sitting here and the proxy is dead, or if it's a non-enterable seat.
-            if( (SeatProxies[i].Health <= 0 && (DriverIndex < 0 ||
-                GetDriverForSeatIndex(SeatProxies[i].SeatIndex) == none )) || Seats[SeatProxies[i].SeatIndex].bNonEnterable )
+            if ((SeatProxies[i].Health <= 0 && (DriverIndex < 0 ||
+                GetDriverForSeatIndex(SeatProxies[i].SeatIndex) == none)) || Seats[SeatProxies[i].SeatIndex].bNonEnterable)
             {
                 // Unhide the mesh for the interior seat proxies.
-                if( SeatProxies[i].ProxyMeshActor != none )
+                if (SeatProxies[i].ProxyMeshActor != none)
                 {
                     SeatProxies[i].ProxyMeshActor.HideMesh(false);
                     `pmlog("Unhiding proxy for seat" @ SeatProxies[i].SeatIndex @ "as health is" @ SeatProxies[i].Health);
@@ -1017,12 +1087,42 @@ simulated function DrivingStatusChanged()
     ChangeCrewCollision(bDriving, 0);
 }
 
-// NOTE: Overridden on purpose to do nothing. Use SpawnOrReplaceSeatProxyCustom() instead.
+// NOTE: Don't call this manually. Use SpawnOrReplaceSeatProxyCustom() instead.
 simulated function SpawnSeatProxies()
 {
+    local ROPlayerController ROPC;
+    local ROPawn ROP;
+    local int SeatIndex;
+
+    if (WorldInfo.NetMode == NM_DedicatedServer)
+    {
+        return;
+    }
+
+    // We don't want this to be called!
     `pmlog("*** *** WARNING *** *** old function SpawnSeatProxies() called! Script trace:\n"
         $ GetScriptTrace() $ "\n\n*** *** WARNING *** ***");
     ClientMessage("WARNING: SpawnSeatProxies() called, check the log!");
+
+    // Actually, let's spawn the proxies here and set them all visible.
+    // This should only be called from ROWeaponPawn currently.
+    // TODO: getting correct pawn and seat index here is kinda tricky...
+    ROPC = ROPlayerController(GetALocalPlayerController());
+    if (ROPC != None)
+    {
+        `pmlog("self                    = " $ self);
+        `pmlog("ROPC                    = " $ ROPC);
+        `pmlog("ROPC.Pawn               = " $ ROPC.Pawn);
+        `pmlog("ROPC.Pawn.DrivenVehicle = " $ ROPC.Pawn.DrivenVehicle);
+
+        // We are the vehicle.
+        if (ROPC.Pawn == self)
+        {
+
+        }
+    }
+
+    // SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, True, False, True);
 }
 
 /**
@@ -1177,9 +1277,9 @@ simulated function SetInteriorVisibility(bool bVisible)
     TextureBias = bVisible ? -2 : 0;
 
     // Change the component visibility only if it changed
-    if( bInteriorVisible != bVisible )
+    if (bInteriorVisible != bVisible)
     {
-        for( i=0; i<MeshAttachments.length; i++ )
+        for (i = 0; i < MeshAttachments.length; i++)
         {
             if(MeshAttachments[i].Component == none)
             {
@@ -1189,10 +1289,12 @@ simulated function SetInteriorVisibility(bool bVisible)
             MeshAttachments[i].Component.SetHidden(bHide);
 
             // Set negative texture lod bias to tank interior
-            for( j=0; j<MeshAttachments[i].Component.GetNumElements(); j++ )
+            for (j = 0; j < MeshAttachments[i].Component.GetNumElements(); j++)
             {
                 if (MeshAttachments[i].Component.GetMaterial(j) != none)
+                {
                     MeshAttachments[i].Component.GetMaterial(j).ApplyLodBias(TextureBias);
+                }
             }
         }
 
@@ -1200,15 +1302,18 @@ simulated function SetInteriorVisibility(bool bVisible)
         bInteriorVisible = bVisible;
     }
 
-    for (i = 0; i < Mesh.GetNumElements(); i++)
+    if (Mesh != None)
     {
-        if (Mesh.GetMaterial(i) != None)
+        for (i = 0; i < Mesh.GetNumElements(); i++)
         {
-            Mesh.GetMaterial(i).ApplyLodBias(TextureBias);
+            if (Mesh.GetMaterial(i) != None)
+            {
+                Mesh.GetMaterial(i).ApplyLodBias(TextureBias);
+            }
         }
     }
 
-    for (i = 0; i < Seats.length; i++)
+    for (i = 0; i < Seats.Length; i++)
     {
         ForceOverlayTextureMipsToBeResident(i, bVisible);
     }

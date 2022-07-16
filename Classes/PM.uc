@@ -14,12 +14,12 @@ function PreBeginPlay()
 function NotifyLogin(Controller NewPlayer)
 {
     super.NotifyLogin(NewPlayer);
-    ROGameInfo(WorldInfo.Game).HUDType = class'PMHUD';
+    ClientSetHUD();
 }
 
-reliable client function SetHUD()
+reliable client function ClientSetHUD()
 {
-    SetHUD;
+    SetHUD();
 }
 
 function SetHUD()

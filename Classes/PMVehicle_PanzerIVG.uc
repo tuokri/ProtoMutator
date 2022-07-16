@@ -1357,7 +1357,7 @@ DefaultProperties
 
 //  DrawScale=1.35
 
-    Seats(0)={( CameraTag=None,
+    Seats(`SI_PZ_IVG_DRIVER)={( CameraTag=None,
                 CameraOffset=-420,
                 SeatAnimBlendName=DriverPositionNode,
                 SeatPositions=( (bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,PositionUpAnim=Driver_open,PositionIdleAnim=Driver_open_idle,DriverIdleAnim=Driver_open_idle,AlternateIdleAnim=Driver_open_idle_AI,SeatProxyIndex=0,
@@ -1401,7 +1401,7 @@ DefaultProperties
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
 
-    Seats(1)={( TurretVarPrefix="Cuppola",
+    Seats(`SI_PZ_IVG_COMMDR)={( TurretVarPrefix="Cuppola",
                 // TODO: is VC binoc texture ok?
                 BinocOverlayTexture=Texture2D'WP_VN_VC_Binoculars.Materials.BINOC_overlay',
                 BarTexture=Texture2D'ui_textures.Textures.button_128grey',
@@ -1444,7 +1444,7 @@ DefaultProperties
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
 
-    Seats(2)={( GunClass=class'PMVWeap_PanzerIVG_Turret',
+    Seats(`SI_PZ_IVG_GUNNER)={( GunClass=class'PMVWeap_PanzerIVG_Turret',
                 SightOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg',
                 NeedleOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_bg_TOP',
                 RangeOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_PZIV_optics_range',
@@ -1488,7 +1488,7 @@ DefaultProperties
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
 
-    Seats(3)={( GunClass=class'PMVWeap_PanzerIVG_HullMG',
+    Seats(`SI_PZ_IVG_HULLMG)={( GunClass=class'PMVWeap_PanzerIVG_HullMG',
                 SightOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_optics_mg',
                 VignetteOverlayTexture=Texture2D'PM_UI_Textures.VehicleOptics.ui_hud_vehicle_optics_vignette',
                 GunSocket=(MG_Barrel),
@@ -1539,7 +1539,7 @@ DefaultProperties
 //              WeaponEffects=((SocketName=TurretFireSocket,Offset=(X=-125),Scale3D=(X=14.0,Y=10.0,Z=10.0)))
                 )}
 
-    Seats(4)={( bNonEnterable=true,
+    Seats(`SI_PZ_IVG_LOADER)={( bNonEnterable=true,
                 SeatAnimBlendName=LoaderPositionNode,
                 TurretVarPrefix="Loader",
                 SeatPositions=((bDriverVisible=false,PositionIdleAnim=Loader_idle,AlternateIdleAnim=Loader_idle,SeatProxyIndex=3,
