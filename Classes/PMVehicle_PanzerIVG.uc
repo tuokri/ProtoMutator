@@ -1360,14 +1360,14 @@ DefaultProperties
     Seats(`SI_PZ_IVG_DRIVER)={( CameraTag=None,
                 CameraOffset=-420,
                 SeatAnimBlendName=DriverPositionNode,
-                SeatPositions=( (bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,PositionUpAnim=Driver_open,PositionIdleAnim=Driver_open_idle,DriverIdleAnim=Driver_open_idle,AlternateIdleAnim=Driver_open_idle_AI,SeatProxyIndex=0,
+                SeatPositions=( (bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,PositionUpAnim=Driver_open,PositionIdleAnim=Driver_open_idle,DriverIdleAnim=Driver_open_idle,AlternateIdleAnim=Driver_open_idle_AI,SeatProxyIndex=`SI_PZ_IVG_DRIVER,
                                     bIsExterior=true,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
                                     HipsIKInfo=(PinEnabled=true),
                                     PositionFlinchAnims=(Driver_open_Flinch),
                                     PositionDeathAnims=(Driver_open_Death)),
-                                (bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,PositionUpAnim=Driver_portTOclose,PositionDownAnim=Driver_close,PositionIdleAnim=Driver_close_idle,DriverIdleAnim=Driver_close_idle,AlternateIdleAnim=Driver_close_idle_AI,SeatProxyIndex=0,
+                                (bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,PositionUpAnim=Driver_portTOclose,PositionDownAnim=Driver_close,PositionIdleAnim=Driver_close_idle,DriverIdleAnim=Driver_close_idle,AlternateIdleAnim=Driver_close_idle_AI,SeatProxyIndex=`SI_PZ_IVG_DRIVER,
                                     LeftHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=DriverLeftLever,DefaultEffectorRotationTargetName=DriverLeftLever),
                                     RightHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=DriverRightLever,DefaultEffectorRotationTargetName=DriverRightLever,
                                         AlternateEffectorTargets=((Action=DAct_ShiftGears,IKEnabled=true,EffectorLocationTargetName=DriverClutchLever,EffectorRotationTargetName=DriverClutchLever))),
@@ -1380,7 +1380,7 @@ DefaultProperties
                                     PositionInteractions=((InteractionIdleAnim=Driver_sideport_Idle,StartInteractionAnim=Driver_closeTOsideport,EndInteractionAnim=Driver_sideportTOclose,FlinchInteractionAnim=Driver_sideport_Flinch,
                                         ViewFOV=70,bAllowFocus=true,InteractionSocketTag=DriverLeftViewPort,InteractDotAngle=0.95,bUseDOF=true))),
                                 (bDriverVisible=false,bAllowFocus=false,PositionCameraTag=Driver_Camera,ViewFOV=70.0,bViewFromCameraTag=true,bDrawOverlays=true,
-                                    PositionDownAnim=Driver_closeTOport,PositionIdleAnim=Driver_port_idle,DriverIdleAnim=Driver_port_idle,AlternateIdleAnim=Driver_port_idle_AI,SeatProxyIndex=0,
+                                    PositionDownAnim=Driver_closeTOport,PositionIdleAnim=Driver_port_idle,DriverIdleAnim=Driver_port_idle,AlternateIdleAnim=Driver_port_idle_AI,SeatProxyIndex=`SI_PZ_IVG_DRIVER,
                                     LeftHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=DriverLeftLever,DefaultEffectorRotationTargetName=DriverLeftLever),
                                     RightHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=DriverRightLever,DefaultEffectorRotationTargetName=DriverRightLever,
                                         AlternateEffectorTargets=((Action=DAct_ShiftGears,IKEnabled=true,EffectorLocationTargetName=DriverClutchLever,EffectorRotationTargetName=DriverClutchLever))),
@@ -1410,7 +1410,7 @@ DefaultProperties
                 bSeatVisible=true,
                 SeatBone=Turret,
                 SeatAnimBlendName=CommanderPositionNode,
-                SeatPositions=((bDriverVisible=true,bAllowFocus=false,/*bDrawOverlays=true,*/bBinocsPosition=true,PositionCameraTag=None,ViewFOV=5.4,bRotateGunOnCommand=false,PositionUpAnim=Com_open_idle,PositionIdleAnim=Com_open_idle,DriverIdleAnim=Com_open_idle,AlternateIdleAnim=Com_open_idle_AI,SeatProxyIndex=1,
+                SeatPositions=((bDriverVisible=true,bAllowFocus=false,/*bDrawOverlays=true,*/bBinocsPosition=true,PositionCameraTag=None,ViewFOV=5.4,bRotateGunOnCommand=false,PositionUpAnim=Com_open_idle,PositionIdleAnim=Com_open_idle,DriverIdleAnim=Com_open_idle,AlternateIdleAnim=Com_open_idle_AI,SeatProxyIndex=`SI_PZ_IVG_COMMDR,
                                     bIsExterior=true,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
@@ -1419,7 +1419,7 @@ DefaultProperties
                                     RightFootIKInfo=(PinEnabled=true),
                                     PositionFlinchAnims=(Com_open_Flinch),
                                     PositionDeathAnims=(Com_open_Death)),
-                                (bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionDownAnim=Com_open_idle,PositionUpAnim=Com_open,PositionIdleAnim=Com_open_idle,DriverIdleAnim=Com_open_idle,AlternateIdleAnim=Com_open_idle_AI,SeatProxyIndex=1,
+                                (bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionDownAnim=Com_open_idle,PositionUpAnim=Com_open,PositionIdleAnim=Com_open_idle,DriverIdleAnim=Com_open_idle,AlternateIdleAnim=Com_open_idle_AI,SeatProxyIndex=`SI_PZ_IVG_COMMDR,
                                     bIsExterior=true,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
@@ -1428,7 +1428,7 @@ DefaultProperties
                                     RightFootIKInfo=(PinEnabled=true),
                                     PositionFlinchAnims=(Com_open_Flinch),
                                     PositionDeathAnims=(Com_open_Death)),
-                               (bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionDownAnim=Com_close,PositionIdleAnim=Com_close_idle,DriverIdleAnim=Com_close_idle,AlternateIdleAnim=Com_close_idle_AI,SeatProxyIndex=1,  //PositionUpAnim=Com_gunnerTOclose,
+                               (bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionDownAnim=Com_close,PositionIdleAnim=Com_close_idle,DriverIdleAnim=Com_close_idle,AlternateIdleAnim=Com_close_idle_AI,SeatProxyIndex=`SI_PZ_IVG_COMMDR,  //PositionUpAnim=Com_gunnerTOclose,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
                                     HipsIKInfo=(PinEnabled=true),
@@ -1458,7 +1458,7 @@ DefaultProperties
                 bSeatVisible=true,
                 SeatBone=Turret,
                 SeatAnimBlendName=GunnerPositionNode,
-                SeatPositions=((bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionUpAnim=Gunner_portTOclose,PositionIdleAnim=Gunner_Close_Idle,DriverIdleAnim=Gunner_Close_Idle,AlternateIdleAnim=Gunner_Close_Idle_AI,SeatProxyIndex=4, //PositionDownAnim=Com_closeTOgunner,
+                SeatPositions=((bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionUpAnim=Gunner_portTOclose,PositionIdleAnim=Gunner_Close_Idle,DriverIdleAnim=Gunner_Close_Idle,AlternateIdleAnim=Gunner_Close_Idle_AI,SeatProxyIndex=`SI_PZ_IVG_GUNNER, //PositionDownAnim=Com_closeTOgunner,
                                     LeftHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=GunnerElevationWheel,DefaultEffectorRotationTargetName=GunnerElevationWheel),
                                     RightHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=GunnerTraverseHandle,DefaultEffectorRotationTargetName=GunnerTraverseHandle),
                                     LeftFootIKInfo=(IKEnabled=false),
@@ -1468,7 +1468,7 @@ DefaultProperties
                                     //LookAtInfo=(LookAtEnabled=true,DefaultLookAtTargetName=GunnerTraverseHandle,HeadInfluence=0.0,BodyInfluence=1.0),
                                     PositionInteractions=((InteractionIdleAnim=Gunner_sideport_Idle,StartInteractionAnim=Gunner_closeTOsideport,EndInteractionAnim=Gunner_sideportTOclose,FlinchInteractionAnim=Gunner_sideport_Flinch,
                                         ViewFOV=70,bAllowFocus=true,InteractionSocketTag=GunnerViewPort,InteractDotAngle=0.95,bUseDOF=true))),
-                               (bDriverVisible=false,bAllowFocus=false,PositionCameraTag=Camera_Gunner,ViewFOV=13.5,bCamRotationFollowSocket=true,bViewFromCameraTag=true,bDrawOverlays=true,PositionDownAnim=Gunner_closeTOport,PositionIdleAnim=Gunner_port_idle,DriverIdleAnim=Gunner_port_idle,AlternateIdleAnim=Gunner_port_idle_AI,SeatProxyIndex=4,
+                               (bDriverVisible=false,bAllowFocus=false,PositionCameraTag=Camera_Gunner,ViewFOV=13.5,bCamRotationFollowSocket=true,bViewFromCameraTag=true,bDrawOverlays=true,PositionDownAnim=Gunner_closeTOport,PositionIdleAnim=Gunner_port_idle,DriverIdleAnim=Gunner_port_idle,AlternateIdleAnim=Gunner_port_idle_AI,SeatProxyIndex=`SI_PZ_IVG_GUNNER,
                                     LeftHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=GunnerElevationWheel,DefaultEffectorRotationTargetName=GunnerElevationWheel),
                                     RightHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=GunnerTraverseHandle,DefaultEffectorRotationTargetName=GunnerTraverseHandle),
                                     LeftFootIKInfo=(IKEnabled=false),
@@ -1500,14 +1500,14 @@ DefaultProperties
                 bSeatVisible=true,
                 SeatBone=Chassis,
                 SeatAnimBlendName=HullMGPositionNode,
-                SeatPositions=((bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionUpAnim=MG_open,PositionIdleAnim=MG_open_idle,DriverIdleAnim=MG_open_idle,AlternateIdleAnim=MG_open_idle_AI,SeatProxyIndex=2,bIgnoreWeapon=true,
+                SeatPositions=((bDriverVisible=true,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionUpAnim=MG_open,PositionIdleAnim=MG_open_idle,DriverIdleAnim=MG_open_idle,AlternateIdleAnim=MG_open_idle_AI,SeatProxyIndex=`SI_PZ_IVG_HULLMG,bIgnoreWeapon=true,
                                     bIsExterior=true,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
                                     HipsIKInfo=(PinEnabled=true),
                                     PositionFlinchAnims=(MG_open_Flinch),
                                     PositionDeathAnims=(MG_open_Death)),
-                               (bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionUpAnim=MG_portTOclose,PositionDownAnim=MG_close,PositionIdleAnim=MG_close_idle,DriverIdleAnim=MG_close_idle,AlternateIdleAnim=MG_close_idle_AI,SeatProxyIndex=2,bIgnoreWeapon=true,
+                               (bDriverVisible=false,bAllowFocus=true,PositionCameraTag=None,ViewFOV=70.0,bRotateGunOnCommand=true,PositionUpAnim=MG_portTOclose,PositionDownAnim=MG_close,PositionIdleAnim=MG_close_idle,DriverIdleAnim=MG_close_idle,AlternateIdleAnim=MG_close_idle_AI,SeatProxyIndex=`SI_PZ_IVG_HULLMG,bIgnoreWeapon=true,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
                                     HipsIKInfo=(PinEnabled=true),
@@ -1518,7 +1518,7 @@ DefaultProperties
                                     PositionInteractions=((InteractionIdleAnim=MG_sideport_Idle,StartInteractionAnim=MG_closeTOsideport,EndInteractionAnim=MG_sideportTOclose,FlinchInteractionAnim=MG_sideport_Flinch,
                                         ViewFOV=70,bAllowFocus=true,InteractionSocketTag=MGRightViewPort,InteractDotAngle=0.95,bUseDOF=true))),
                                (bDriverVisible=false,bAllowFocus=false,PositionCameraTag=MG_Camera,ViewFOV=35.0,bCamRotationFollowSocket=true,bViewFromCameraTag=true,bDrawOverlays=true,bUseDOF=true,
-                                    PositionDownAnim=MG_closeTOport,PositionIdleAnim=MG_port_idle,bConstrainRotation=false,YawContraintIndex=0,PitchContraintIndex=1,DriverIdleAnim=MG_port_idle,AlternateIdleAnim=MG_port_idle_AI,SeatProxyIndex=2,       //2.0x zoom should be 16.25, for gameplay trying less zoom for now
+                                    PositionDownAnim=MG_closeTOport,PositionIdleAnim=MG_port_idle,bConstrainRotation=false,YawContraintIndex=0,PitchContraintIndex=1,DriverIdleAnim=MG_port_idle,AlternateIdleAnim=MG_port_idle_AI,SeatProxyIndex=`SI_PZ_IVG_HULLMG,       //2.0x zoom should be 16.25, for gameplay trying less zoom for now
                                     LeftHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=HullMGLeftHand,DefaultEffectorRotationTargetName=HullMGLeftHand),
                                     RightHandIKInfo=(IKEnabled=true,DefaultEffectorLocationTargetName=HullMGRightHand,DefaultEffectorRotationTargetName=HullMGRightHand),
                                     HipsIKInfo=(PinEnabled=true),
@@ -1542,7 +1542,7 @@ DefaultProperties
     Seats(`SI_PZ_IVG_LOADER)={( bNonEnterable=true,
                 SeatAnimBlendName=LoaderPositionNode,
                 TurretVarPrefix="Loader",
-                SeatPositions=((bDriverVisible=false,PositionIdleAnim=Loader_idle,AlternateIdleAnim=Loader_idle,SeatProxyIndex=3,
+                SeatPositions=((bDriverVisible=false,PositionIdleAnim=Loader_idle,AlternateIdleAnim=Loader_idle,SeatProxyIndex=`SI_PZ_IVG_LOADER,
                                     LeftHandIKInfo=(PinEnabled=true),
                                     RightHandIKInfo=(PinEnabled=true),
                                     HipsIKInfo=(PinEnabled=true),
@@ -1843,16 +1843,16 @@ DefaultProperties
     VehHitZones(19)=(ZoneName=TURRETRINGSIX,DamageMultiplier=1.0,VehicleHitZoneType=VHT_Mechanicals,ZoneHealth=10,VisibleFrom=14)
     VehHitZones(20)=(ZoneName=COAXIALMG,DamageMultiplier=1.0,VehicleHitZoneType=VHT_Mechanicals,ZoneHealth=25)
     VehHitZones(21)=(ZoneName=MAINCANNONREAR,DamageMultiplier=1.0,VehicleHitZoneType=VHT_Mechanicals,ZoneHealth=50,KillPercentage=0.3)
-    VehHitZones(22)=(ZoneName=DRIVERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=0,SeatProxyIndex=0,CrewBoneName=Driver_bone)
+    VehHitZones(22)=(ZoneName=DRIVERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=0,SeatProxyIndex=0,CrewBoneName=Driver_bone) // TODO: FIX SPIS HERE!
     VehHitZones(23)=(ZoneName=DRIVERHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=0,SeatProxyIndex=0,CrewBoneName=Driver_bone)
-    VehHitZones(24)=(ZoneName=HULLMGBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=3,SeatProxyIndex=2,CrewBoneName=Hullgunner_Bone)
-    VehHitZones(25)=(ZoneName=HULLMGHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=3,SeatProxyIndex=2,CrewBoneName=Hullgunner_Bone)
+    VehHitZones(24)=(ZoneName=HULLMGBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=3,SeatProxyIndex=3,CrewBoneName=Hullgunner_Bone)
+    VehHitZones(25)=(ZoneName=HULLMGHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=3,SeatProxyIndex=3,CrewBoneName=Hullgunner_Bone)
     VehHitZones(26)=(ZoneName=COMMANDERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=1,SeatProxyIndex=1,CrewBoneName=Commander_Bone)
     VehHitZones(27)=(ZoneName=COMMANDERHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=1,SeatProxyIndex=1,CrewBoneName=Commander_Bone)
-    VehHitZones(28)=(ZoneName=LOADERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=4,SeatProxyIndex=3,CrewBoneName=Loader_Bone)
-    VehHitZones(29)=(ZoneName=LOADERHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=4,SeatProxyIndex=3,CrewBoneName=Loader_Bone)
-    VehHitZones(30)=(ZoneName=GUNNERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=2,SeatProxyIndex=4,CrewBoneName=Turretgunner_Bone)
-    VehHitZones(31)=(ZoneName=GUNNERHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=2,SeatProxyIndex=4,CrewBoneName=Turretgunner_Bone)
+    VehHitZones(28)=(ZoneName=LOADERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=4,SeatProxyIndex=4,CrewBoneName=Loader_Bone)
+    VehHitZones(29)=(ZoneName=LOADERHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=4,SeatProxyIndex=4,CrewBoneName=Loader_Bone)
+    VehHitZones(30)=(ZoneName=GUNNERBODY,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewBody,CrewSeatIndex=2,SeatProxyIndex=2,CrewBoneName=Turretgunner_Bone)
+    VehHitZones(31)=(ZoneName=GUNNERHEAD,DamageMultiplier=1.0,VehicleHitZoneType=VHT_CrewHead,CrewSeatIndex=2,SeatProxyIndex=2,CrewBoneName=Turretgunner_Bone)
     VehHitZones(32)=(ZoneName=LEFTTRACKONE,DamageMultiplier=1.0,VehicleHitZoneType=VHT_Track,ZoneHealth=200,VisibleFrom=5)
     VehHitZones(33)=(ZoneName=LEFTTRACKTWO,DamageMultiplier=1.0,VehicleHitZoneType=VHT_Track,ZoneHealth=200)
     VehHitZones(34)=(ZoneName=LEFTTRACKTHREE,DamageMultiplier=1.0,VehicleHitZoneType=VHT_Track,ZoneHealth=800)
@@ -2034,11 +2034,11 @@ DefaultProperties
     MainGunTextureOffset=(PositionOffset=(X=-0,Y=-40,Z=0),MySizeX=14,MYSizeY=37)
     CoaxMGTextureOffset=(PositionOffset=(X=+6,Y=-14,Z=0),MySizeX=6,MYSizeY=14)
 
-    SeatTextureOffsets(0)=(PositionOffSet=(X=-16,Y=-21,Z=0),bTurretPosition=0)
-    SeatTextureOffsets(1)=(PositionOffSet=(X=0,Y=+10,Z=0),bTurretPosition=1)
-    SeatTextureOffsets(2)=(PositionOffSet=(X=+16,Y=-21,Z=0),bTurretPosition=0)
-    SeatTextureOffsets(3)=(PositionOffSet=(X=+8,Y=-4,Z=0),bTurretPosition=1)
-    SeatTextureOffsets(4)=(PositionOffSet=(X=-8,Y=-4,Z=0),bTurretPosition=1)
+    SeatTextureOffsets(`SI_PZ_IVG_DRIVER)=(PositionOffSet=(X=-16,Y=-21,Z=0),bTurretPosition=0)
+    SeatTextureOffsets(`SI_PZ_IVG_COMMDR)=(PositionOffSet=(X=0,Y=+10,Z=0),bTurretPosition=1)
+    SeatTextureOffsets(`SI_PZ_IVG_HULLMG)=(PositionOffSet=(X=+16,Y=-21,Z=0),bTurretPosition=0)
+    SeatTextureOffsets(`SI_PZ_IVG_LOADER)=(PositionOffSet=(X=+8,Y=-4,Z=0),bTurretPosition=1)
+    SeatTextureOffsets(`SI_PZ_IVG_GUNNER)=(PositionOffSet=(X=-8,Y=-4,Z=0),bTurretPosition=1)
 
     SpeedoMinDegree=5461
     SpeedoMaxDegree=60075
