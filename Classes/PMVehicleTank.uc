@@ -1165,6 +1165,55 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
     `log("**** **** **** **** **** ****");
 }
 
+/** Turn the vehicle interior visibility on or off. */
+simulated function SetInteriorVisibility(bool bVisible)
+{
+    local bool bHide;
+    local int i, j, TextureBias;
+
+    `pmlog("bVisible = " $ bVisible);
+
+    bHide = !bVisible;
+    TextureBias = bVisible ? -2 : 0;
+
+    // Change the component visibility only if it changed
+    if( bInteriorVisible != bVisible )
+    {
+        for( i=0; i<MeshAttachments.length; i++ )
+        {
+            if(MeshAttachments[i].Component == none)
+            {
+                continue;
+            }
+
+            MeshAttachments[i].Component.SetHidden(bHide);
+
+            // Set negative texture lod bias to tank interior
+            for( j=0; j<MeshAttachments[i].Component.GetNumElements(); j++ )
+            {
+                if (MeshAttachments[i].Component.GetMaterial(j) != none)
+                    MeshAttachments[i].Component.GetMaterial(j).ApplyLodBias(TextureBias);
+            }
+        }
+
+        // Update the state of the interior visibility flag
+        bInteriorVisible = bVisible;
+    }
+
+    for (i = 0; i < Mesh.GetNumElements(); i++)
+    {
+        if (Mesh.GetMaterial(i) != None)
+        {
+            Mesh.GetMaterial(i).ApplyLodBias(TextureBias);
+        }
+    }
+
+    for (i = 0; i < Seats.length; i++)
+    {
+        ForceOverlayTextureMipsToBeResident(i, bVisible);
+    }
+}
+
 DefaultProperties
 {
     // This is the same in VehicleCrewProxy, not sure why it's even needed.

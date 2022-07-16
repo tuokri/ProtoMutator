@@ -2,6 +2,8 @@ class PMVehProj_PanzerIVG_AP extends ROTankCannonProjectile;
 
 DefaultProperties
 {
+    AmmoTypeShortName="AP"
+
     BallisticCoefficient=1.8
     Speed=37000 //740 M/S
     MaxSpeed=37000

@@ -1,5 +1,18 @@
 class PMPlayerController extends ROPlayerController;
 
+simulated event PostBeginPlay()
+{
+    if (WorldInfo.NetMode == NM_Standalone)
+    {
+        GetPM().SetHUD();
+    }
+}
+
+function PM GetPM()
+{
+    return PM(WorldInfo.Game.BaseMutator);
+}
+
 function RightLeftLean()
 {
     ServerLeanLeft(bWantsToLeanLeft);
