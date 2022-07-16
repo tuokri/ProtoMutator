@@ -228,18 +228,25 @@ exec function SpawnPanzerIVG()
 reliable server function ServerSpawnVehicle(string TankContentClass)
 {
     local vector EndShot;
-    local vector StartShot;
     local vector CamLoc;
-    local vector HitLoc, HitNorm;
+    local vector HitLoc;
+    local vector HitNorm;
     local rotator CamRot;
     local class<ROVehicle> VehicleClass;
-    Local ROVehicle ROV;
+    local ROVehicle ROV;
 
     GetPlayerViewPoint(CamLoc, CamRot);
-    StartShot = CamLoc;
-    EndShot = StartShot + (1000.0 * vector(CamRot));
+    EndShot = CamLoc + (vector(CamRot) * 10000.0);
 
-    Trace(HitLoc, HitNorm, EndShot, StartShot);
+    Trace(HitLoc, HitNorm, EndShot, CamLoc, true, vect(10,10,10));
+
+    if (IsZero(HitLoc))
+    {
+        `pmlog(self $ " trace failed, using fallback spawn location");
+        HitLoc = CamLoc + (vector(CamRot) * 250);
+    }
+
+    HitLoc.Z += 250;
 
     `pmlog(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
     ClientMessage(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
@@ -254,59 +261,75 @@ reliable server function ServerSpawnVehicle(string TankContentClass)
     }
 }
 
-exec function LogMyVehicleSeatProxyStates()
+simulated function PMVehicleTank GetMyPMTank()
 {
     if (PMVehicleTank(Pawn) != None)
     {
-        PMVehicleTank(Pawn).LogSeatProxyStates(PMVehicleTank(Pawn));
+        return PMVehicleTank(Pawn);
+    }
+    else if (ROWeaponPawn(Pawn) != None)
+    {
+        return PMVehicleTank(ROWeaponPawn(Pawn).MyVehicle);
+    }
+    else
+    {
+        return PMVehicleTank(Pawn.DrivenVehicle);
+    }
+}
+
+simulated exec function LogMyVehicleSeatProxyStates()
+{
+    if (GetMyPMTank() != None)
+    {
+        GetMyPMTank().LogSeatProxyStates(GetMyPMTank());
     }
 }
 
 simulated exec function KillDriver(int DriverToKill)
 {
-    if (PMVehicleTank(Pawn) != None)
+    if (GetMyPMTank() != None)
     {
-        PMVehicleTank(Pawn).DebugKillDriver(DriverToKill);
+        GetMyPMTank().DebugKillDriver(DriverToKill);
     }
 }
 
 simulated exec function KillProxy(int ProxyIndexToKill)
 {
-    if (PMVehicleTank(Pawn) != None)
+    if (GetMyPMTank() != None)
     {
-        PMVehicleTank(Pawn).DebugKillProxy(ProxyIndexToKill);
+        GetMyPMTank().DebugKillProxy(ProxyIndexToKill);
     }
 }
 
 simulated exec function RefreshProxies()
 {
-    if (PMVehicleTank(Pawn) != None)
+    if (GetMyPMTank() != None)
     {
-        PMVehicleTank(Pawn).DebugRefreshProxies();
+        GetMyPMTank().DebugRefreshProxies();
     }
 }
 
 simulated exec function ReviveProxies()
 {
-    if (PMVehicleTank(Pawn) != None)
+    if (GetMyPMTank() != None)
     {
-        PMVehicleTank(Pawn).DebugReviveProxies();
+        GetMyPMTank().DebugReviveProxies();
     }
 }
 
 simulated exec function DestroyProxies()
 {
-    if (PMVehicleTank(Pawn) != None)
+    if (GetMyPMTank() != None)
     {
-        PMVehicleTank(Pawn).DebugDestroyProxies();
+        GetMyPMTank().DebugDestroyProxies();
     }
 }
 
 simulated exec function DamageProxy(int ProxyIndex, int DamageAmount)
 {
-    if (PMVehicleTank(Pawn) != None)
+    if (GetMyPMTank() != None)
     {
-        PMVehicleTank(Pawn).DebugDamageProxy(ProxyIndex, DamageAmount);
+        GetMyPMTank().DebugDamageProxy(ProxyIndex, DamageAmount);
     }
 }
 

@@ -53,35 +53,35 @@ simulated event ReplicatedEvent(name VarName)
     {
         if( IsLocalPlayerInThisVehicle() )
         {
-            PlaySeatProxyDeathHitEffects(0, DeathHitInfo_ProxyDriver);
+            PlaySeatProxyDeathHitEffects(`SI_PZ_IVG_DRIVER, DeathHitInfo_ProxyDriver);
         }
     }
     else if (VarName == 'DeathHitInfo_ProxyCommander')
     {
         if( IsLocalPlayerInThisVehicle() )
         {
-            PlaySeatProxyDeathHitEffects(1, DeathHitInfo_ProxyCommander);
+            PlaySeatProxyDeathHitEffects(`SI_PZ_IVG_COMMDR, DeathHitInfo_ProxyCommander);
         }
     }
     else if (VarName == 'DeathHitInfo_ProxyHullMG')
     {
         if( IsLocalPlayerInThisVehicle() )
         {
-            PlaySeatProxyDeathHitEffects(2, DeathHitInfo_ProxyHullMG);
+            PlaySeatProxyDeathHitEffects(`SI_PZ_IVG_HULLMG, DeathHitInfo_ProxyHullMG);
         }
     }
     else if (VarName == 'DeathHitInfo_ProxyLoader')
     {
         if( IsLocalPlayerInThisVehicle() )
         {
-            PlaySeatProxyDeathHitEffects(3, DeathHitInfo_ProxyLoader);
+            PlaySeatProxyDeathHitEffects(`SI_PZ_IVG_LOADER, DeathHitInfo_ProxyLoader);
         }
     }
     else if (VarName == 'DeathHitInfo_ProxyGunner')
     {
         if( IsLocalPlayerInThisVehicle() )
         {
-            PlaySeatProxyDeathHitEffects(4, DeathHitInfo_ProxyGunner);
+            PlaySeatProxyDeathHitEffects(`SI_PZ_IVG_GUNNER, DeathHitInfo_ProxyGunner);
         }
     }
     else
@@ -160,14 +160,14 @@ simulated function StopVehicleSounds()
  * Request using a new pending position index
  *
  * @param   SeatIndex             The seat index that the Interaction is being requested for
- * @param   PositionIndex         The position index that is being requested
+ * @param   DesiredIndex          The position index that is being requested
  */
 simulated function RequestPosition(byte SeatIndex, byte DesiredIndex, optional bool bViaInteraction)
 {
     local ROWeaponPawn ROWP;
 
     // Allow position switching to take us to/from the gunner/cuppola position for easy of use
-    if( SeatIndex == 1 && DesiredIndex == 3 )
+    if( SeatIndex == `SI_PZ_IVG_COMMDR && DesiredIndex == 3 )
     {
         ROWP = ROWeaponPawn(Seats[SeatIndex].SeatPawn);
         if( ROWP != none )
@@ -257,35 +257,35 @@ function DamageSeatProxy(int SeatProxyIndex, int Damage, Controller InstigatedBy
     // Update the hit info for each seat proxy pertaining to this vehicle
     switch( SeatProxyIndex )
     {
-    case 0:
+    case `SI_PZ_IVG_DRIVER:
         // Driver
         DeathHitInfo_ProxyDriver.Damage = Damage;
         DeathHitInfo_ProxyDriver.HitLocation = HitLocation;
         DeathHitInfo_ProxyDriver.Momentum = Momentum;
         DeathHitInfo_ProxyDriver.DamageType = DamageType;
         break;
-    case 1:
+    case `SI_PZ_IVG_COMMDR:
         // Commander
         DeathHitInfo_ProxyCommander.Damage = Damage;
         DeathHitInfo_ProxyCommander.HitLocation = HitLocation;
         DeathHitInfo_ProxyCommander.Momentum = Momentum;
         DeathHitInfo_ProxyCommander.DamageType = DamageType;
         break;
-    case 2:
+    case `SI_PZ_IVG_HULLMG:
         // HullMG
         DeathHitInfo_ProxyHullMG.Damage = Damage;
         DeathHitInfo_ProxyHullMG.HitLocation = HitLocation;
         DeathHitInfo_ProxyHullMG.Momentum = Momentum;
         DeathHitInfo_ProxyHullMG.DamageType = DamageType;
         break;
-    case 3:
+    case `SI_PZ_IVG_LOADER:
         // Loader
         DeathHitInfo_ProxyLoader.Damage = Damage;
         DeathHitInfo_ProxyLoader.HitLocation = HitLocation;
         DeathHitInfo_ProxyLoader.Momentum = Momentum;
         DeathHitInfo_ProxyLoader.DamageType = DamageType;
         break;
-    case 4:
+    case `SI_PZ_IVG_GUNNER:
         // Gunner
         DeathHitInfo_ProxyGunner.Damage = Damage;
         DeathHitInfo_ProxyGunner.HitLocation = HitLocation;
@@ -394,11 +394,11 @@ simulated function LeaveBloodSplats(int InSeatIndex)
         // 0 = Walls, 1 = Driver/HullMG, 2 = Turret, 3 = Cuppola
         switch( InSeatIndex )
         {
-        case 0 : MICIndex = 1; break;
-        case 1 : MICIndex = 3; break;
-        case 2 : MICIndex = 2; break;
-        case 3 : MICIndex = 1; break;
-        case 4 : MICIndex = 2; break;
+        case `SI_PZ_IVG_DRIVER : MICIndex = 1; break;
+        case `SI_PZ_IVG_COMMDR : MICIndex = 3; break;
+        case `SI_PZ_IVG_GUNNER : MICIndex = 2; break;
+        case `SI_PZ_IVG_HULLMG : MICIndex = 1; break;
+        case `SI_PZ_IVG_LOADER : MICIndex = 2; break;
         }
 
         InteriorMICs[0].SetScalarParameterValue(Seats[InSeatIndex].VehicleBloodMICParameterName, 1.0);
@@ -581,10 +581,10 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
     bUseExteriorAnim = IsSeatPositionOutsideTank(OldSeatIndex);
 
     // Moving out of the driver seat
-    if( OldSeatIndex == 0 )
+    if( OldSeatIndex == `SI_PZ_IVG_DRIVER )
     {
         // Transition from driver to commander
-        if( NewSeatIndex == 1 )
+        if( NewSeatIndex == `SI_PZ_IVG_COMMDR )
         {
             TransitionAnim = (bUseExteriorAnim) ? 'Driver_Open_TranTurret' : 'Driver_TranTurret';
             TimerName = 'SeatTransitioningDriverToTurretGoalCommander';
@@ -592,7 +592,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
             bAttachDriverPawn = true;
         }
         // Transition from driver to gunner
-        else if( NewSeatIndex == 2 )
+        else if( NewSeatIndex == `SI_PZ_IVG_GUNNER )
         {
             TransitionAnim = (bUseExteriorAnim) ? 'Driver_Open_TranTurret' : 'Driver_TranTurret';
             TimerName = 'SeatTransitioningDriverToTurretGoalGunner';
@@ -600,7 +600,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
             bAttachDriverPawn = true;
         }
         // Transition from driver to hull MG
-        else if( NewSeatIndex == 3 )
+        else if( NewSeatIndex == `SI_PZ_IVG_HULLMG )
         {
             TransitionAnim = (bUseExteriorAnim) ? 'Driver_Open_TranMG' : 'Driver_TranMg';
             Seats[NewSeatIndex].SeatTransitionBoneName = 'Chassis';

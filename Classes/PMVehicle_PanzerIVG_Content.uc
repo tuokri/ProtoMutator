@@ -51,6 +51,11 @@ DefaultProperties
     End Object
     EngineSoundCustom=IdleEngineExhaustSound
 
+    Begin Object Class=AudioComponent Name=StopEngineSound
+        // TODO: stopsound SoundCue=SoundCue'AUD_Vehicle_Tank_PanzerIV.Movement.Panzer_Movement_Engine_Run_Exhaust_Cue'
+    End Object
+    EngineStopSoundCustom=StopEngineSound
+
     // Track sounds
     Begin Object Class=AudioComponent Name=TrackLSound
         // SoundCue=SoundCue'AUD_Vehicle_Tank_PanzerIV.Movement.Panzer_Movement_Treads_L_Cue'
@@ -173,7 +178,7 @@ DefaultProperties
     // Driver.
     SeatProxies(`SI_PZ_IVG_DRIVER)={(
         TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
-        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadGearMeshType=None,
         HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
         HeadphonesMeshType=none,
         HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
@@ -184,7 +189,7 @@ DefaultProperties
     // Commander.
     SeatProxies(`SI_PZ_IVG_COMMDR)={(
         TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
-        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadGearMeshType=None,
         HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
         HeadphonesMeshType=none,
         HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
@@ -195,7 +200,7 @@ DefaultProperties
     // Gunner.
     SeatProxies(`SI_PZ_IVG_GUNNER)={(
         TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
-        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadGearMeshType=None,
         HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
         HeadphonesMeshType=none,
         HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
@@ -206,7 +211,7 @@ DefaultProperties
     // Hull MG.
     SeatProxies(`SI_PZ_IVG_HULLMG)={(
         TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
-        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadGearMeshType=None,
         HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
         HeadphonesMeshType=none,
         HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',
@@ -217,7 +222,7 @@ DefaultProperties
     // Loader.
     SeatProxies(`SI_PZ_IVG_LOADER)={(
         TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Long_Mesh',
-        HeadGearMeshType=SkeletalMesh'CHR_VN_US_Headgear.Mesh.US_headgear_var1',
+        HeadGearMeshType=None,
         HeadAndArmsMeshType=SkeletalMesh'CHR_VN_US_Heads.Mesh.US_Head1_Mesh',
         HeadphonesMeshType=none,
         HeadAndArmsMICTemplate=MaterialInstanceConstant'CHR_VN_US_Heads.Materials.M_US_Head_01_Long_INST',

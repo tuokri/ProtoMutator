@@ -116,9 +116,6 @@ simulated function PostBeginPlay()
     SeatIndexHullMG = GetHullMGSeatIndex();
     SeatIndexGunner = GetGunnerSeatIndex();
 
-    if ( bDeleteMe )
-        return;
-
     if (Role == ROLE_Authority)
     {
         // GRIP BEGIN
@@ -156,6 +153,11 @@ simulated function PostBeginPlay()
     }
 
     SpawnExternallyVisibleSeatProxies();
+}
+
+simulated function AttachBrokenTransmissionSound()
+{
+    Mesh.AttachComponentToSocket(BrokenTransmissionSoundCustom, Exhaust_FXSocket);
 }
 
 // TODO: We'll want these in the future.
@@ -489,7 +491,7 @@ simulated function SetProxyMeshVisibility(bool bSetVisible, VehicleCrewProxy Pro
     `pmlog("bSetVisible=" $ bSetVisible $ " ProxyActor=" $ ProxyActor $ " SeatProxyIndex="
         $ SeatProxyIndex $ " bEnableCrewCollision=" $ bEnableCrewCollision);
 
-    ProxyActor.HideMesh(bSetVisible);
+    ProxyActor.HideMesh(!bSetVisible);
     ProxyActor.UpdateVehicleIK(self, SeatProxies[SeatProxyIndex].SeatIndex, SeatProxies[SeatProxyIndex].PositionIndex);
     if ((SeatProxies[SeatProxyIndex].Health <= 0) && bEnableCrewCollision)
     {
@@ -558,6 +560,9 @@ simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
 
     for (i = 0; i < SeatProxies.Length; i++)
     {
+        `pmlog("Before logic : SeatProxies[" $ i $ "] HiddenGame=" $ SeatProxies[i].ProxyMeshActor.Mesh.HiddenGame,
+            SeatProxies[i].ProxyMeshActor != None);
+
         if (SeatProxies[i].ProxyMeshActor != none)
         {
             SeatProxies[i].ProxyMeshActor.SetVisibilityToInterior();
@@ -571,6 +576,7 @@ simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
             if (GetSeatProxyForSeatIndex(DriverIndex).ProxyMeshActor != none)
             {
                 GetSeatProxyForSeatIndex(DriverIndex).ProxyMeshActor.HideMesh(true);
+                `pmlog("Hiding proxy for seat" @ SeatProxies[i].SeatIndex);
             }
         }
         else
@@ -593,6 +599,9 @@ simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
                 }
             }
         }
+
+        `pmlog("After logic  : SeatProxies[" $ i $ "] HiddenGame=" $ SeatProxies[i].ProxyMeshActor.Mesh.HiddenGame,
+            SeatProxies[i].ProxyMeshActor != None);
     }
 }
 
@@ -639,6 +648,7 @@ simulated function SetSeatProxyVisibilityExterior(optional int DriverIndex =-1)
             if ((DriverIndex >= 0) && (GetSeatProxyForSeatIndex(DriverIndex) == SeatProxies[i]))
             {
                 GetSeatProxyForSeatIndex(DriverIndex).ProxyMeshActor.HideMesh(true);
+                `pmlog("Hiding proxy for seat" @ SeatProxies[i].SeatIndex);
             }
             else
             {
@@ -655,6 +665,7 @@ simulated function SetSeatProxyVisibilityExterior(optional int DriverIndex =-1)
                 {
                     // Unhide the mesh for the exterior seatproxies.
                     SeatProxies[i].ProxyMeshActor.HideMesh(false);
+                    `pmlog("Unhiding proxy for seat" @ SeatProxies[i].SeatIndex);
                 }
             }
         }
@@ -730,10 +741,12 @@ simulated function HandleSeatProxyHealthUpdated()
                         if (!IsLocalSeatProxy(i))
                         {
                             SeatProxies[i].ProxyMeshActor.HideMesh(false);
+                            `pmlog("unhiding non-local seat proxy at SeatProxies[" $ i $ "]");
                         }
                         else
                         {
                             SeatProxies[i].ProxyMeshActor.HideMesh(true);
+                            `pmlog("hiding local seat proxy at SeatProxies[" $ i $ "]");
                         }
 
                         ChangeCrewCollision(true, ProxySeatIdx);
@@ -757,6 +770,7 @@ simulated function HandleSeatProxyHealthUpdated()
                         //Seats[ProxySeatIdx].PositionBlend.HandleAnimPlay(Seats[ProxySeatIdx].SeatPositions[Seats[ProxySeatIdx].InitialPositionIndex].PositionIdleAnim, true);
 
                         SeatProxies[i].ProxyMeshActor.HideMesh(false);
+                        `pmlog("unhiding dead seat proxy at SeatProxies[" $ i $ "]");
 
                         // if (Seats[ProxySeatIdx].bNonEnterable)
                         // {
@@ -1213,7 +1227,7 @@ simulated function SpawnSeatProxies()
 
     // The most questionable piece of code I've ever written in my life.
     // Whoever is reading this, please don't ever do this!
-    if (InStr(Caps(STrace), Caps("ROWeaponPawn.DrivingStatusChanged")) == -1)
+    if (InStr(Caps(STrace), Caps("ROWeaponPawn:DrivingStatusChanged")) == -1)
     {
         // We don't want this to be called (except for our special case)!
         `pmlog("*** *** WARNING *** *** old function SpawnSeatProxies() called! Script trace:\n"
@@ -1480,7 +1494,7 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
 
         `log("  Seats[" $ i $ "]: StoragePawn=" $ StoragePawn $ " bNonEnterable=" $ VS.bNonEnterable
             $ " StoragePawnController=" $ StoragePawnController
-            $ " SeatPawn(Weapon)=" $ VS.SeatPawn);
+            $ " SeatPawn(Weapon)=" $ VS.SeatPawn $ " SeatPawnController=" $ VS.SeatPawn.Controller);
     }
     `log("**** **** **** **** **** ****");
 }
