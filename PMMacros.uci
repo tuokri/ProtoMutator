@@ -4,6 +4,9 @@
     `if(`tag), name("ProtoMutator-" $ string(`tag))`else'ProtoMutator'`endif)
 
 
+`define DEBUG_BUILD         1
+
+
 // Panzer IVG seat indices.
 `define SI_PZ_IVG_DRIVER    0
 `define SI_PZ_IVG_COMMDR    1

@@ -2,6 +2,8 @@ class PMPlayerController extends ROPlayerController;
 
 simulated event PostBeginPlay()
 {
+    super.PostBeginPlay();
+
     if (WorldInfo.NetMode == NM_Standalone)
     {
         GetPM().SetHUD();
@@ -137,6 +139,9 @@ reliable protected server function ServerLeanLeft(bool leanstate)
     }
 }
 
+// -------------------- DEBUG HELPERS --------------------
+`ifdef(DEBUG_BUILD)
+
 exec function Camera(name NewMode)
 {
     ServerCamera(NewMode);
@@ -222,28 +227,27 @@ exec function SpawnPanzerIVG()
 
 reliable server function ServerSpawnVehicle(string TankContentClass)
 {
-    local vector X;
-    local vector Y;
-    local vector Z;
     local vector EndShot;
     local vector StartShot;
     local vector CamLoc;
+    local vector HitLoc, HitNorm;
     local rotator CamRot;
     local class<ROVehicle> VehicleClass;
     Local ROVehicle ROV;
 
     GetPlayerViewPoint(CamLoc, CamRot);
-    GetAxes(CamRot, X, Y, Z);
     StartShot = CamLoc;
-    EndShot = StartShot + (200.0 * X);
+    EndShot = StartShot + (1000.0 * vector(CamRot));
 
-    `pmlog(self $ " attempting to spawn" @ TankContentClass @ "at" @ EndShot);
-    ClientMessage(self $ " attempting to spawn" @ TankContentClass @ "at" @ EndShot);
+    Trace(HitLoc, HitNorm, EndShot, StartShot);
+
+    `pmlog(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
+    ClientMessage(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
 
     VehicleClass = class<ROVehicle>(DynamicLoadObject(TankContentClass, class'Class'));
     if (VehicleClass != none)
     {
-        ROV = Spawn(VehicleClass, , , EndShot);
+        ROV = Spawn(VehicleClass, , , HitLoc);
         ROV.Mesh.AddImpulse(vect(0,0,1), ROV.Location);
         ClientMessage(self $ " spawned" @ VehicleClass @ ROV @ "at" @ ROV.Location);
         `pmlog(self $ " spawned" @ VehicleClass @ ROV @ "at" @ ROV.Location);
@@ -252,15 +256,61 @@ reliable server function ServerSpawnVehicle(string TankContentClass)
 
 exec function LogMyVehicleSeatProxyStates()
 {
-    local PMVehicleTank Tank;
-
-    Tank = PMVehicleTank(Pawn);
-
-    if (Tank != None)
+    if (PMVehicleTank(Pawn) != None)
     {
-        Tank.LogSeatProxyStates(Tank);
+        PMVehicleTank(Pawn).LogSeatProxyStates(PMVehicleTank(Pawn));
     }
 }
+
+simulated exec function KillDriver(int DriverToKill)
+{
+    if (PMVehicleTank(Pawn) != None)
+    {
+        PMVehicleTank(Pawn).DebugKillDriver(DriverToKill);
+    }
+}
+
+simulated exec function KillProxy(int ProxyIndexToKill)
+{
+    if (PMVehicleTank(Pawn) != None)
+    {
+        PMVehicleTank(Pawn).DebugKillProxy(ProxyIndexToKill);
+    }
+}
+
+simulated exec function RefreshProxies()
+{
+    if (PMVehicleTank(Pawn) != None)
+    {
+        PMVehicleTank(Pawn).DebugRefreshProxies();
+    }
+}
+
+simulated exec function ReviveProxies()
+{
+    if (PMVehicleTank(Pawn) != None)
+    {
+        PMVehicleTank(Pawn).DebugReviveProxies();
+    }
+}
+
+simulated exec function DestroyProxies()
+{
+    if (PMVehicleTank(Pawn) != None)
+    {
+        PMVehicleTank(Pawn).DebugDestroyProxies();
+    }
+}
+
+simulated exec function DamageProxy(int ProxyIndex, int DamageAmount)
+{
+    if (PMVehicleTank(Pawn) != None)
+    {
+        PMVehicleTank(Pawn).DebugDamageProxy(ProxyIndex, DamageAmount);
+    }
+}
+
+`endif // DEBUG_BUILD
 
 DefaultProperties
 {
