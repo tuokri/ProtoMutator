@@ -184,63 +184,13 @@ simulated function float GetEngineOutput()
 simulated function SitDriver(ROPawn ROP, int SeatIndex)
 {
     local ROPlayerController ROPC;
-    local Pawn LocalPawn;
 
     `pmlog("ROP=" $ ROP $ " SeatIndex= " $ SeatIndex);
 
     // NOTE: Ignore ROVehicleTank::SitDriver.
     super(ROVehicleTreaded).SitDriver(ROP, SeatIndex);
 
-    // Here we need to find the local PlayerController for either the SeatPawn
-    // or the Pawn we're putting in the seat. Have to search a couple different
-    // ways, since this code has to run on the server and the client, and the
-    // Pawns get possessed in a different order on the client and the server.
-    if ((Seats[SeatIndex].SeatPawn != none) && (Seats[SeatIndex].SeatPawn.Driver != none))
-    {
-        ROPC = ROPlayerController(Seats[SeatIndex].SeatPawn.Driver.Controller);
-    }
-
-    // Couldn't find the Controller for the driver, check the SeatPawn
-    if ((ROPC == none) && (Seats[SeatIndex].SeatPawn != none))
-    {
-        ROPC = ROPlayerController(Seats[SeatIndex].SeatPawn.Controller);
-    }
-
-    // Look at the controller of the incoming pawn's DrivenVehicle,
-    // and see if it matches the local PlayerController.
-    if (ROPC == none)
-    {
-        if ((ROP.DrivenVehicle.Controller != none) && (ROP.DrivenVehicle.Controller == GetALocalPlayerController()))
-        {
-            ROPC = ROPlayerController(ROP.DrivenVehicle.Controller);
-        }
-    }
-
-    // Another check, if we are looking for the controller for the vehicle itself
-    // just check and see if the controller for the local PlayerController is set
-    // to this vehicle.
-    if ((ROPC == none) && (SeatIndex == 0))
-    {
-        if ((GetALocalPlayerController() != none) && (GetALocalPlayerController().Pawn == self))
-        {
-            ROPC = ROPlayerController(GetALocalPlayerController());
-        }
-    }
-
-    // Final check, if we are looking for the controller for a particular seat
-    // just check and see if the controller for the local PlayerController is set
-    // to that seat's SeatPawn.
-    if (ROPC == none)
-    {
-        LocalPawn = GetALocalPlayerController().Pawn;
-
-        `pmlog("Local Pawn = " $ LocalPawn $ " GetALocalPlayerController() = " $ GetALocalPlayerController() $ " local Pawn Controller = " $ LocalPawn.Controller);
-
-        if ((GetALocalPlayerController() != none) && (LocalPawn == Seats[SeatIndex].SeatPawn))
-        {
-            ROPC = ROPlayerController(GetALocalPlayerController());
-        }
-    }
+    ROPC = ROPlayerController(FindVehicleLocalPlayerController(ROP, SeatIndex));
 
     if ((ROPC != none) && ((WorldInfo.NetMode == NM_Standalone) || IsLocalPlayerInThisVehicle()))
     {
@@ -337,24 +287,96 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
     }
 }
 
+simulated function PlayerController FindVehicleLocalPlayerController(ROPawn ROP, int SeatIndex, optional out Pawn LocalPawn)
+{
+    local ROPlayerController ROPC;
+
+    // Here we need to find the local PlayerController for either the SeatPawn
+    // or the Pawn we're putting in the seat. Have to search a couple different
+    // ways, since this code has to run on the server and the client, and the
+    // Pawns get possessed in a different order on the client and the server.
+    if ((Seats[SeatIndex].SeatPawn != none) && (Seats[SeatIndex].SeatPawn.Driver != none))
+    {
+        ROPC = ROPlayerController(Seats[SeatIndex].SeatPawn.Driver.Controller);
+    }
+
+    // Couldn't find the Controller for the driver, check the SeatPawn
+    if ((ROPC == none) && (Seats[SeatIndex].SeatPawn != none))
+    {
+        ROPC = ROPlayerController(Seats[SeatIndex].SeatPawn.Controller);
+    }
+
+    // Look at the controller of the incoming pawn's DrivenVehicle,
+    // and see if it matches the local PlayerController.
+    if (ROPC == none)
+    {
+        if ((ROP.DrivenVehicle.Controller != none) && (ROP.DrivenVehicle.Controller == GetALocalPlayerController()))
+        {
+            ROPC = ROPlayerController(ROP.DrivenVehicle.Controller);
+        }
+    }
+
+    // Another check, if we are looking for the controller for the vehicle itself
+    // just check and see if the controller for the local PlayerController is set
+    // to this vehicle.
+    if ((ROPC == none) && (SeatIndex == 0))
+    {
+        if ((GetALocalPlayerController() != none) && (GetALocalPlayerController().Pawn == self))
+        {
+            ROPC = ROPlayerController(GetALocalPlayerController());
+        }
+    }
+
+    // Final check, if we are looking for the controller for a particular seat
+    // just check and see if the controller for the local PlayerController is set
+    // to that seat's SeatPawn.
+    if (ROPC == none)
+    {
+        LocalPawn = GetALocalPlayerController().Pawn;
+
+        `pmlog("LocalPawn = " $ LocalPawn $ " GetALocalPlayerController() = " $ GetALocalPlayerController()
+            $ " LocalPawn.Controller = " $ LocalPawn.Controller);
+
+        if ((GetALocalPlayerController() != none) && (LocalPawn == Seats[SeatIndex].SeatPawn))
+        {
+            ROPC = ROPlayerController(GetALocalPlayerController());
+        }
+    }
+
+    return ROPC;
+}
+
 // Just a wrapper to call our custom version.
 // NOTE: SeatIndex here actually refers to SeatProxyIndex.
 //       It is assumed they are both equal for every seat position.
 //       This is not true for RO2 tank code so be careful when porting stuff.
 simulated function SpawnOrReplaceSeatProxy(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility)
 {
-    SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, bInternalVisibility, false, false);
+    SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, bInternalVisibility, false, false, false);
 }
 
 // TODO: Try to simplify this logic.
-// NOTE: From ROVehicleHelicopter with some additions.
+// NOTE: From ROVehicleHelicopter with some heavy modifications.
 // NOTE: Only use bForceCreateProxy when initially spawning the tank!
 // NOTE: Only use bForceSetVisible to make seat proxies for non-local pawns visible!
 /**
- * Spawn or update a single proxy for playing death animations on. Match the outfit to that of the Pawn in the same seat.
+ * Spawn or update a single proxy (or multiple, depending on the boolean flags)
+ * for playing death animations on. Match the outfit to that of the Pawn in the same seat.
+ *
+ * @param SeatIndex                 The pawn's SeatIndex. NOTE: This is actually SeatProxyIndex.
+ * @param ROP                       The pawn in this SeatIndex.
+ * @param bInternalVisibility       Set visiblity to interiot for the seat proxy or proxies handled.
+ * @param bForceCreateProxy         If set, always loop through all SeatProxies (unless overridden by bOnlySeatIndex).
+ * @param bForceSetVisible          If set, force seat proxy visible in this SeatIndex.
+ * @param bOnlySeatIndex            If set, only handle this seat index.
  */
-simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, optional bool bInternalVisibility,
-    optional bool bForceCreateProxy = false, optional bool bForceSetVisible = false)
+simulated function SpawnOrReplaceSeatProxyCustom(
+    int SeatIndex,
+    ROPawn ROP,
+    optional bool bInternalVisibility = false,
+    optional bool bForceCreateProxy = false,
+    optional bool bForceSetVisible = false,
+    optional bool bOnlySeatIndex = false)
 {
     local int i;
     local VehicleCrewProxy CurrentProxyActor;
@@ -370,9 +392,10 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
     }
 
     `pmlog("SeatIndex=" $ SeatIndex $ " ROP=" $ ROP $ " bInternalVisibility="
-        $ bInternalVisibility $ " bForceCreateProxy=" $ bForceCreateProxy $ " bForceSetVisible=" $ bForceSetVisible);
+        $ bInternalVisibility $ " bForceCreateProxy=" $ bForceCreateProxy $ " bForceSetVisible="
+        $ bForceSetVisible $ " bOnlySeatIndex=" $ bOnlySeatIndex);
 
-    ROMI = ROMapInfo(WorldInfo.GetMapInfo());
+    `pmlog(GetScriptTrace());
 
     // Don't create proxy if vehicle is dead to prevent leave bodies in the air after round has finished.
     if (IsPendingKill() || bDeadVehicle)
@@ -380,15 +403,23 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
         return;
     }
 
+    ROMI = ROMapInfo(WorldInfo.GetMapInfo());
+
     for (i = 0; i < SeatProxies.Length; i++)
     {
         bPlayerEnterableSeat = !Seats[SeatProxies[i].SeatIndex].bNonEnterable;
         bIsThisPawnsSeat = (SeatIndex == i);
 
+        // bOnlySeatIndex is higher priority than other checks.
+        if (bOnlySeatIndex && !bIsThisPawnsSeat)
+        {
+            continue;
+        }
+
         // Only create a proxy for the seat the player has entered, or any seats where players can never enter.
         // OR if bForceCreateProxy is set. Caution: only use bForceCreateProxy when initially spawning tanks!
         // OR if bForceSetVisible is set.
-        if (bForceCreateProxy || (bIsThisPawnsSeat && (ROP != none)) || !bPlayerEnterableSeat || bForceSetVisible)
+        if (bForceCreateProxy || (bIsThisPawnsSeat && (ROP != none)) || !bPlayerEnterableSeat || (bForceSetVisible && bIsThisPawnsSeat))
         {
             bSetMeshRequired = false;
 
@@ -438,6 +469,7 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
             }
 
             // Create the proxy mesh for player-enterable seat from the Pawn.
+            // TODO: if we can move into loader position we may want to rethink this logic.
             if (bPlayerEnterableSeat && (ROP != None))
             {
                 CurrentProxyActor.ReplaceProxyMeshWithPawn(ROP);
@@ -456,15 +488,15 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
 
             if (bInternalVisibility)
             {
-                SetSeatProxyVisibilityInterior();
+                SetSeatProxyVisibilityInteriorByIndex(i);
             }
             else
             {
-                SetSeatProxyVisibilityExterior();
+                SetSeatProxyVisibilityExteriorByIndex(i);
             }
 
             // bForceSetVisible means we want to force visbility for *this pawn's* seat.
-            if (bForceSetVisible && bIsThisPawnsSeat)
+            if (bForceSetVisible)
             {
                 SetProxyMeshVisibility(true, CurrentProxyActor, i, true);
             }
@@ -472,12 +504,18 @@ simulated function SpawnOrReplaceSeatProxyCustom(int SeatIndex, ROPawn ROP, opti
             // NOTE: Tank should always show all living non-local-player proxies.
             else if (bPlayerEnterableSeat || bForceCreateProxy)
             {
-                SetProxyMeshVisibility(false, CurrentProxyActor, i, false);
+                SetProxyMeshVisibility(false, CurrentProxyActor, i, true);
             }
             // Non-enterable (loaders, etc.). Always visible.
-            else
+            // TODO: If we should be able to enter loader's seat, we need to re-think this logic.
+            else if (!bPlayerEnterableSeat)
             {
                 SetProxyMeshVisibility(true, CurrentProxyActor, i, true);
+            }
+            // Fallback option is to hide. Probably shouldn't get there though.
+            else
+            {
+                SetProxyMeshVisibility(false, CurrentProxyActor, i, true);
             }
         }
     }
@@ -539,7 +577,14 @@ simulated function SpawnExternallyVisibleSeatProxies()
 
         if ((SeatProxies[i].ProxyMeshActor == None) && bCanBecomeVisible)
         {
-            SpawnOrReplaceSeatProxyCustom(i, None, false, true);
+            SpawnOrReplaceSeatProxyCustom(
+                i,                                    // SeatIndex
+                None,                                 // ROP
+                False,                                // bInternalVisibility
+                True,                                 // bForceCreateProxy
+                False,                                // bForceSetVisible
+                True                                  // bOnlySeatIndex
+            );
         }
     }
 }
@@ -548,7 +593,6 @@ simulated function SpawnExternallyVisibleSeatProxies()
 // TODO: check hide/unhide logic again. Differs from ROVehicle.
 /**
  * Set the SeatProxies visibility to the foreground depth group
- * Now only unhide the proxy if it's dead
  *
  * @param   DriverIndex         - if set denotes the local player's SeatIndex
  */
@@ -578,6 +622,11 @@ simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
                 GetSeatProxyForSeatIndex(DriverIndex).ProxyMeshActor.HideMesh(true);
                 `pmlog("Hiding proxy for seat" @ SeatProxies[i].SeatIndex);
             }
+        }
+        else if (IsLocalSeatProxy(i))
+        {
+            SeatProxies[i].ProxyMeshActor.HideMesh(true);
+            `pmlog("Hiding proxy for local seat" @ SeatProxies[i].SeatIndex);
         }
         else
         {
@@ -610,7 +659,6 @@ simulated function SetSeatProxyVisibilityInterior(int DriverIndex =-1)
 /**
  * Set the SeatProxies visibility to the world depth group if they can
  * become visible.
- * Now only unhide them if the proxy is dead
  *
  * @param   DriverIndex         - If set denotes the local player's SeatIndex
  */
@@ -621,7 +669,7 @@ simulated function SetSeatProxyVisibilityExterior(optional int DriverIndex =-1)
 
     `pmlog("DriverIndex=" $ DriverIndex);
 
-    for ( i = 0; i < SeatProxies.Length; i++ )
+    for (i = 0; i < SeatProxies.Length; i++)
     {
         `pmlog("Before logic : SeatProxies[" $ i $ "] HiddenGame=" $ SeatProxies[i].ProxyMeshActor.Mesh.HiddenGame,
             SeatProxies[i].ProxyMeshActor != None);
@@ -650,6 +698,11 @@ simulated function SetSeatProxyVisibilityExterior(optional int DriverIndex =-1)
                 GetSeatProxyForSeatIndex(DriverIndex).ProxyMeshActor.HideMesh(true);
                 `pmlog("Hiding proxy for seat" @ SeatProxies[i].SeatIndex);
             }
+            else if (IsLocalSeatProxy(i))
+            {
+                SeatProxies[i].ProxyMeshActor.HideMesh(true);
+                `pmlog("Hiding proxy for local seat" @ SeatProxies[i].SeatIndex);
+            }
             else
             {
                 // Display meshes for third person proxies that could be seen.
@@ -672,6 +725,28 @@ simulated function SetSeatProxyVisibilityExterior(optional int DriverIndex =-1)
 
         `pmlog("After logic  : SeatProxies[" $ i $ "] HiddenGame=" $ SeatProxies[i].ProxyMeshActor.Mesh.HiddenGame,
             SeatProxies[i].ProxyMeshActor != None);
+    }
+}
+
+// Non-looping version only for this SeatProxyIndex.
+simulated function SetSeatProxyVisibilityInteriorByIndex(int SeatProxyIndex)
+{
+    if (SeatProxies[SeatProxyIndex].ProxyMeshActor != none)
+    {
+        SeatProxies[SeatProxyIndex].ProxyMeshActor.SetVisibilityToInterior();
+        SeatProxies[SeatProxyIndex].ProxyMeshActor.SetLightingChannels(InteriorLightingChannels);
+        SeatProxies[SeatProxyIndex].ProxyMeshActor.SetLightEnvironment(InteriorLightEnvironment);
+    }
+}
+
+// Non-looping version only for this SeatProxyIndex.
+simulated function SetSeatProxyVisibilityExteriorByIndex(int SeatProxyIndex)
+{
+    if (SeatProxies[SeatProxyIndex].ProxyMeshActor != none)
+    {
+        SeatProxies[SeatProxyIndex].ProxyMeshActor.SetVisibilityToExterior();
+        SeatProxies[SeatProxyIndex].ProxyMeshActor.SetLightingChannels(ExteriorLightingChannels);
+        SeatProxies[SeatProxyIndex].ProxyMeshActor.SetLightEnvironment(LightEnvironment);
     }
 }
 
@@ -730,7 +805,14 @@ simulated function HandleSeatProxyHealthUpdated()
                     SeatProxies[i].ProxyMeshActor.ClearBloodOverlay();
 
                     // Replace it entirely to get rid of gore.
-                    SpawnOrReplaceSeatProxyCustom(ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle());
+                    SpawnOrReplaceSeatProxyCustom(
+                        ProxySeatIdx,
+                        ROPawn(Seats[ProxySeatIdx].StoragePawn),
+                        IsLocalPlayerInThisVehicle(),
+                        false,      // bForceCreateProxy
+                        false,      // bForceSetVisible
+                        false       // bOnlySeatIndex
+                    );
 
                     if (Seats[ProxySeatIdx].SeatPositions[SeatProxies[i].PositionIndex].bDriverVisible)
                     {
@@ -738,15 +820,15 @@ simulated function HandleSeatProxyHealthUpdated()
 
                         // NOTE: Tank should always show all non-local-player proxies.
                         // if (Seats[ProxySeatIdx].bNonEnterable)
-                        if (!IsLocalSeatProxy(i))
-                        {
-                            SeatProxies[i].ProxyMeshActor.HideMesh(false);
-                            `pmlog("unhiding non-local seat proxy at SeatProxies[" $ i $ "]");
-                        }
-                        else
+                        if (IsLocalSeatProxy(i))
                         {
                             SeatProxies[i].ProxyMeshActor.HideMesh(true);
                             `pmlog("hiding local seat proxy at SeatProxies[" $ i $ "]");
+                        }
+                        else
+                        {
+                            SeatProxies[i].ProxyMeshActor.HideMesh(false);
+                            `pmlog("unhiding non-local seat proxy at SeatProxies[" $ i $ "]");
                         }
 
                         ChangeCrewCollision(true, ProxySeatIdx);
@@ -1090,29 +1172,22 @@ simulated function FinishTransition(int SeatTransitionedTo)
 
     if (ROPC != None && LocalPlayer(ROPC.Player) != none)
     {
-        // Set the FOV to the initial FOV for this position when the transition is complete
+        // Set the FOV to the initial FOV for this position when the transition is complete.
         ROPC.HandleTransitionFOV(Seats[SeatTransitionedTo].SeatPositions[Seats[SeatTransitionedTo].InitialPositionIndex].ViewFOV, 0.0);
+    }
 
-        P = ROPawn(ROPC.Pawn);
-
-        // TODO: Do we need to use SeatProxy.StoragePawn here? Just log a warning and if the pawns don't
-        //       match and revisit this function if this warning is ever triggered.
-        `pmlog("*** *** *** *** *** *** WARNING, POTENTIAL BUG, CHECK THIS LOGIC AGAIN: ROPawn(ROPC.Pawn)="
-            $ P $ " Seats[" $ SeatTransitionedTo $ "].StoragePawn=" $ Seats[SeatTransitionedTo].StoragePawn,
-            P != Seats[SeatTransitionedTo].StoragePawn);
-
-        if (P != None)
-        {
-            // To set correct customization etc...
-            SpawnOrReplaceSeatProxyCustom(SeatTransitionedTo, P, IsLocalPlayerInThisVehicle());
-        }
-        else
-        {
-            // If this happens, should we run some default error handling version of SpawnOrReplaceSeatProxyCustom()?
-            // Did the player get kicked/disconnected before the transition ended? Did they exit the vehicle
-            // somehow during the transition?
-            `pmlog("!!! ERROR !!! SeatTransitionedTo=" $ SeatTransitionedTo $ " ROPC.Pawn is NULL!");
-        }
+    P = ROPawn(Seats[SeatTransitionedTo].StoragePawn);
+    if (P != None)
+    {
+        // To set correct customization etc...
+        SpawnOrReplaceSeatProxyCustom(SeatTransitionedTo, P, IsLocalPlayerInThisVehicle());
+    }
+    else
+    {
+        // If this happens, should we run some default error handling version of SpawnOrReplaceSeatProxyCustom()?
+        // Did the player get kicked/disconnected before the transition ended? Did they exit the vehicle
+        // somehow during the transition?
+        `pmlog("!!! ERROR !!! SeatTransitionedTo=" $ SeatTransitionedTo $ " Pawn is NULL!");
     }
 
     Seats[SeatTransitionedTo].bTransitioningToSeat = false;
@@ -1133,7 +1208,6 @@ function bool FullyRepairVehicle()
 
     bDidSomeRepairs = super.FullyRepairVehicle();
     ReviveProxies();
-
     return bDidSomeRepairs;
 }
 
@@ -1161,7 +1235,11 @@ simulated function bool ReviveProxies()
                 ChangeCrewCollision(true, ProxySeatIdx);
             }
 
-            SpawnOrReplaceSeatProxyCustom(ProxySeatIdx, ROPawn(Seats[ProxySeatIdx].StoragePawn), IsLocalPlayerInThisVehicle());
+            SpawnOrReplaceSeatProxyCustom(
+                ProxySeatIdx,
+                ROPawn(Seats[ProxySeatIdx].StoragePawn),
+                IsLocalPlayerInThisVehicle()
+            );
 
             bDidRevive = true;
         }
@@ -1208,82 +1286,60 @@ simulated function DrivingStatusChanged()
     ChangeCrewCollision(bDriving, 0);
 }
 
-// NOTE: Don't call this manually. Use SpawnOrReplaceSeatProxyCustom() instead.
-simulated function SpawnSeatProxies()
+/**
+ * Spawn all seat proxies and set non-local-player proxies visible.
+ *
+ * @param SeatIndex indicates the local player's seat index.
+ */
+simulated function SpawnSeatProxiesCustom(int SeatIndex)
 {
-    local ROPlayerController ROPC;
-    local ROPawn LocalPawn;
-    local int LocalPlayerSeatIndex;
     local int i;
-    local string STrace;
 
     if (WorldInfo.NetMode == NM_DedicatedServer)
     {
         return;
     }
 
-    LocalPlayerSeatIndex = -1;
-    STrace = GetScriptTrace();
+    `pmlog("SeatIndex=" $ SeatIndex);
 
-    // The most questionable piece of code I've ever written in my life.
-    // Whoever is reading this, please don't ever do this!
-    if (InStr(Caps(STrace), Caps("ROWeaponPawn:DrivingStatusChanged")) == -1)
+    for (i = 0; i < Seats.Length; ++i)
     {
-        // We don't want this to be called (except for our special case)!
-        `pmlog("*** *** WARNING *** *** old function SpawnSeatProxies() called! Script trace:\n"
-            $ STrace $ "\n\n*** *** WARNING *** ***");
-        GetALocalPlayerController().ClientMessage("WARNING: SpawnSeatProxies() called, check the log!");
-        return;
-    }
-
-    // Lets spawn the proxies here and set them all visible.
-    // This should only be called from ROWeaponPawn currently.
-    // TODO: getting correct pawn and seat index here is kinda tricky...
-    // TODO: Do we actually need to spawn them here? Just toggle visbility for the correct ones?
-    //       Although we might not want to skip all the nice error handling logic in SpawnOrReplaceSeatProxyCustom...
-    ROPC = ROPlayerController(GetALocalPlayerController());
-    if ((ROPC != None) && (ROPC.Pawn != None))
-    {
-        `pmlog("self                        = " $ self);
-        `pmlog("ROPC                        = " $ ROPC);
-        `pmlog("ROPC.Pawn                   = " $ ROPC.Pawn);
-        `pmlog("ROPC.Pawn.DrivenVehicle     = " $ ROPC.Pawn.DrivenVehicle);
-
-        for (i = 0; i < Seats.Length; ++i)
-        {
-            `pmlog("Seats[" $ i $ "].SeatPawn   = " $ Seats[i].SeatPawn);
-
-            // Found where the local player is sitting. // TODO: THIS DOES NOT WORK!! ROPC.Pawn is the vehicle in certain scenarios...
-            if (ROPawn(Seats[i].StoragePawn) == ROPawn(ROPC.Pawn))
-            {
-                `pmlog("LocalPlayerSeatIndex        = " $ LocalPlayerSeatIndex);
-                LocalPlayerSeatIndex = i;
-                LocalPawn = ROPawn(ROPC.Pawn);
-                continue;
-            }
-
-            // Seats for other, non-local players. Force set visible.
-            // If StoragePawn exists, it will be used for the proxy mesh.
-            SpawnOrReplaceSeatProxyCustom(i, ROPawn(Seats[i].StoragePawn), IsLocalPlayerInThisVehicle(), False, True);
-        }
-
-        if (LocalPlayerSeatIndex == -1 || LocalPawn == None)
-        {
-            `pmlog("!!! WARNING: invalid LocalPlayerSeatIndex or LocalPawn !!!");
-            `pmlog("!!! WARNING: LocalPlayerSeatIndex = " $ LocalPlayerSeatIndex);
-            `pmlog("!!! WARNING: LocalPawn            = " $ LocalPawn);
-        }
-        else
+        if (i == SeatIndex)
         {
             // This is the seat for *this local player*:
             // Internally visible, non-force-create, non-force-set-visible.
-            SpawnOrReplaceSeatProxyCustom(LocalPlayerSeatIndex, LocalPawn, IsLocalPlayerInThisVehicle(), False, False);
+            // TODO: assuming StoragePawn is viable to be used here.
+            SpawnOrReplaceSeatProxyCustom(
+                i,                                    // SeatIndex
+                ROPawn(Seats[i].StoragePawn),         // ROP
+                IsLocalPlayerInThisVehicle(),         // bInternalVisibility
+                False,                                // bForceCreateProxy
+                False,                                // bForceSetVisible
+                True                                  // bOnlySeatIndex
+            );
+        }
+        else
+        {
+            // Seats for other, non-local players (or empty seats). Force set visible.
+            // If StoragePawn exists, it will be used for the proxy mesh.
+            SpawnOrReplaceSeatProxyCustom(
+                i,                                    // SeatIndex
+                ROPawn(Seats[i].StoragePawn),         // ROP
+                IsLocalPlayerInThisVehicle(),         // bInternalVisibility
+                False,                                // bForceCreateProxy
+                True,                                 // bForceSetVisible
+                True                                  // bOnlySeatIndex
+            );
         }
     }
-    else
-    {
-        `pmlog("!!! WARNING: ROPC or ROPC.Pawn is null !!!");
-    }
+}
+
+// NOTE: Don't call this manually. Use SpawnOrReplaceSeatProxyCustom() or SpawnSeatProxies() instead.
+simulated function SpawnSeatProxies()
+{
+    `pmlog("*** *** WARNING *** *** old function SpawnSeatProxies() called! Script trace:\n"
+        $ GetScriptTrace() $ "\n\n*** *** WARNING *** ***");
+    GetALocalPlayerController().ClientMessage("WARNING: SpawnSeatProxies() called, check the log!");
 }
 
 /**
@@ -1351,6 +1407,8 @@ simulated function SetInteriorVisibility(bool bVisible)
 
     `pmlog("bVisible = " $ bVisible);
 
+    `pmlog(GetScriptTrace());
+
     bHide = !bVisible;
     TextureBias = bVisible ? -2 : 0;
 
@@ -1400,12 +1458,38 @@ simulated function SetInteriorVisibility(bool bVisible)
 // Return true if local player is in this seat.
 simulated function bool IsLocalSeat(int SeatIndex)
 {
-    local ROPawn ROP;
+    local Pawn out_LocalPawn;
+    local ROPawn StoragePawn;
+    local ROPlayerController ROPC;
 
-    ROP = ROPawn(GetALocalPlayerController().Pawn);
+    `pmlog("SeatIndex=" $ SeatIndex);
 
-    return ((ROP != None)
-        && (ROPawn(Seats[SeatIndex].StoragePawn) == ROP));
+    StoragePawn = ROPawn(Seats[SeatIndex].StoragePawn);
+
+    // Can't have local player in this seat if there is no storage pawn.
+    if (StoragePawn == None)
+    {
+        return false;
+    }
+
+    ROPC = ROPlayerController(FindVehicleLocalPlayerController(StoragePawn, SeatIndex, out_LocalPawn));
+
+    // Didn't find player controller -> can't have local player in this seat.
+    if (ROPC == None)
+    {
+        return false;
+    }
+    if (StoragePawn == ROPawn(out_LocalPawn))
+    {
+        return true;
+    }
+    // Vehicle driver is local player.
+    if (StoragePawn == ROPawn(ROPC.Pawn))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 // Return true if local player is in this seat proxy.
@@ -1459,6 +1543,8 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
     local ROSkeletalMeshComponent SM;
     local Pawn StoragePawn;
     local Controller StoragePawnController;
+    local Controller SeatPawnController;
+    local Pawn SeatPawn;
 
     `pmlog(Msg $ ": SeatProxies:");
     `log("**** **** **** **** **** ****");
@@ -1491,10 +1577,15 @@ simulated function LogSeatProxyStates(coerce string Msg = "")
         {
             StoragePawnController = StoragePawn.Controller;
         }
+        if (VS.SeatPawn != None)
+        {
+            SeatPawn = VS.SeatPawn;
+            SeatPawnController = SeatPawn.Controller;
+        }
 
         `log("  Seats[" $ i $ "]: StoragePawn=" $ StoragePawn $ " bNonEnterable=" $ VS.bNonEnterable
             $ " StoragePawnController=" $ StoragePawnController
-            $ " SeatPawn(Weapon)=" $ VS.SeatPawn $ " SeatPawnController=" $ VS.SeatPawn.Controller);
+            $ " SeatPawn(Weapon)=" $ SeatPawn $ " SeatPawnController=" $ SeatPawnController);
     }
     `log("**** **** **** **** **** ****");
 }
@@ -1571,4 +1662,6 @@ DefaultProperties
 
     // For debugging.
     bInfantryCanUse=True
+
+    WeaponPawnClass=class'PMWeaponPawn'
 }
