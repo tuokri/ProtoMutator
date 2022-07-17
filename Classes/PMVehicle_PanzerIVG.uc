@@ -156,40 +156,41 @@ simulated function StopVehicleSounds()
     CoaxMGAmbient.Stop();
 }
 
-/**
- * Request using a new pending position index
- *
- * @param   SeatIndex             The seat index that the Interaction is being requested for
- * @param   DesiredIndex          The position index that is being requested
- */
-simulated function RequestPosition(byte SeatIndex, byte DesiredIndex, optional bool bViaInteraction)
-{
-    local ROWeaponPawn ROWP;
+// NOTE: DISABLED THIS FOR NOW BECASUE IT CAUSES ISSUES.
+// /**
+//  * Request using a new pending position index
+//  *
+//  * @param   SeatIndex             The seat index that the Interaction is being requested for
+//  * @param   DesiredIndex          The position index that is being requested
+//  */
+// simulated function RequestPosition(byte SeatIndex, byte DesiredIndex, optional bool bViaInteraction)
+// {
+//     local ROWeaponPawn ROWP;
 
-    // Allow position switching to take us to/from the gunner/cuppola position for easy of use
-    if( SeatIndex == `SI_PZ_IVG_COMMDR && DesiredIndex == 3 )
-    {
-        ROWP = ROWeaponPawn(Seats[SeatIndex].SeatPawn);
-        if( ROWP != none )
-        {
-            // Go to gunner
-            ROWP.SwitchWeapon(3);
-        }
-    }
-    else if( SeatIndex == 2 && DesiredIndex == 255 )
-    {
-        ROWP = ROWeaponPawn(Seats[SeatIndex].SeatPawn);
-        if( ROWP != none )
-        {
-            // Go to cuppola
-            ROWP.SwitchWeapon(2);
-        }
-    }
-    else
-    {
-        super.RequestPosition(SeatIndex, DesiredIndex, bViaInteraction);
-    }
-}
+//     // Allow position switching to take us to/from the gunner/cuppola position for easy of use
+//     if( SeatIndex == `SI_PZ_IVG_COMMDR && DesiredIndex == 3 )
+//     {
+//         ROWP = ROWeaponPawn(Seats[SeatIndex].SeatPawn);
+//         if( ROWP != none )
+//         {
+//             // Go to gunner
+//             ROWP.SwitchWeapon(3);
+//         }
+//     }
+//     else if( SeatIndex == 2 && DesiredIndex == 255 )
+//     {
+//         ROWP = ROWeaponPawn(Seats[SeatIndex].SeatPawn);
+//         if( ROWP != none )
+//         {
+//             // Go to cuppola
+//             ROWP.SwitchWeapon(2);
+//         }
+//     }
+//     else
+//     {
+//         super.RequestPosition(SeatIndex, DesiredIndex, bViaInteraction);
+//     }
+// }
 
 /** Check vehicle state for realistic driving restrictions. */
 // NOTE: prevents driver from driving head out the hatch.
@@ -1566,6 +1567,8 @@ DefaultProperties
                 VehicleBloodMICParameterName=Gore01
                 )}
 
+    // TODO: Add these for other tanks, too?
+    // TODO: Why only for Panzer IV?
     SeatIndexPassRotateOnCommandToOtherSeat=1
     SeatIndexToRotateOnCommandFromOtherSeat=2
 

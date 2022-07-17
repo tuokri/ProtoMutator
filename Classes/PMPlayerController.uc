@@ -193,6 +193,7 @@ private reliable server function ServerBlowUpVehicles(optional bool bHitAmmo = f
     optional int DeadVehicleType = 999, optional bool bForceBlowOffTurret = false)
 {
     local ROVehicle ROV;
+    local int i;
 
     ForEach AllActors(class'ROVehicle', ROV)
     {
@@ -211,6 +212,28 @@ private reliable server function ServerBlowUpVehicles(optional bool bHitAmmo = f
         if (DeadVehicleType != 999)
         {
             ROV.DeadVehicleType = DeadVehicleType;
+        }
+
+        // Clean up seats and seat proxies for now to avoid log spam.
+        // TODO: need to change this debug helper when experimenting with crew death animations.
+        for (i = 0; i < ROV.Seats.Length; i++)
+        {
+            if (!ROV.Seats[i].bNonEnterable
+                && ROV.Seats[i].SeatPawn != None
+                && ROV.Seats[i].StoragePawn != None
+                && ROV.Seats[i].SeatPawn.IsHumanControlled())
+            {
+                ROPawn(ROV.Seats[i].StoragePawn).Died(self, class'RODamageType_CannonShell_AP', ROV.Location);
+            }
+        }
+        for (i = 0; i < ROV.SeatProxies.Length; i++)
+        {
+            if (ROV.SeatProxies[i].ProxyMeshActor != none)
+            {
+                ROV.SeatProxies[i].ProxyMeshActor.SetBase(none);
+                ROV.SeatProxies[i].ProxyMeshActor.Destroy();
+                ROV.SeatProxies[i].ProxyMeshActor = none;
+            }
         }
     }
 }
