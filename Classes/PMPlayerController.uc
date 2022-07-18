@@ -310,6 +310,17 @@ simulated exec function LogMyVehicleSeatProxyStates()
 
 simulated exec function KillDriver(int DriverToKill)
 {
+    DoKillDriver(DriverToKill);
+    ServerKillDriver(DriverToKill);
+}
+
+reliable server function ServerKillDriver(int DriverToKill)
+{
+    DoKillDriver(DriverToKill);
+}
+
+simulated function DoKillDriver(int DriverToKill)
+{
     if (GetMyPMTank() != None)
     {
         GetMyPMTank().DebugKillDriver(DriverToKill);
@@ -349,6 +360,17 @@ simulated exec function DestroyProxies()
 }
 
 simulated exec function DamageProxy(int ProxyIndex, int DamageAmount)
+{
+    DoDamageProxy(ProxyIndex, DamageAmount);
+    ServerDamageProxy(ProxyIndex, DamageAmount);
+}
+
+reliable server function ServerDamageProxy(int ProxyIndex, int DamageAmount)
+{
+    DoDamageProxy(ProxyIndex, DamageAmount);
+}
+
+simulated function DoDamageProxy(int ProxyIndex, int DamageAmount)
 {
     if (GetMyPMTank() != None)
     {

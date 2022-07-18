@@ -748,8 +748,6 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
     local bool bTransitionWithoutProxy;
     local bool bUseExteriorAnim;
 
-    `pmlog("NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex);
-
     super.HandleProxySeatTransition(NewSeatIndex, OldSeatIndex);
 
     VCP = SeatProxies[GetSeatProxyIndexForSeatIndex(NewSeatIndex)].ProxyMeshActor;
@@ -762,6 +760,9 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
     {
         bTransitionWithoutProxy = true;
     }
+
+    `pmlog("NewSeatIndex=" $ NewSeatIndex $ " OldSeatIndex=" $ OldSeatIndex
+        $ "bTransitionWithoutProxy=" $ bTransitionWithoutProxy);
 
     // Moving out of the driver seat.
     if (OldSeatIndex == 0)
