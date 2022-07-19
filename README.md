@@ -2,6 +2,8 @@
 
 RS2 vehicle prototyping mutator with minimal dependencies to other mod code for quicker workflow.
 
+Run the mutator with `open VNTE-MapName?mutator=ProtoMutator.PM`
+
 ## Console commands
 
 Look in [PMPlayerController.uc](Classes/PMPlayerController.uc) for full list of console commands i.e. the functions declared as `exec function`.
