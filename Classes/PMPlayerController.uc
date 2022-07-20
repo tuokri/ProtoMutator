@@ -329,10 +329,21 @@ simulated function DoKillDriver(int DriverToKill)
 
 simulated exec function KillProxy(int ProxyIndexToKill)
 {
+    DoKillProxy(ProxyIndexToKill);
+    ServerKillProxy(ProxyIndexToKill);
+}
+
+simulated function DoKillProxy(int ProxyIndexToKill)
+{
     if (GetMyPMTank() != None)
     {
         GetMyPMTank().DebugKillProxy(ProxyIndexToKill);
     }
+}
+
+reliable server function ServerKillProxy(int ProxyIndexToKill)
+{
+    DoKillProxy(ProxyIndexToKill);
 }
 
 simulated exec function RefreshProxies()
