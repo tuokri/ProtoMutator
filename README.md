@@ -13,3 +13,4 @@ See [PMPlayerController.uc](Classes/PMPlayerController.uc) for full list of cons
 `SpawnPanzerIVG` spawn Panzer IVG in front of the player.
 
 `BlowUpVehiclesForceTurretBlowOff` destroy all vehicles with ammo explosion that blows the turret off.
+
