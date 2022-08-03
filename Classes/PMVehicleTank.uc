@@ -3,6 +3,46 @@
 // ROVehicleTank with some useful code taken from ROVehicleHelicopter.
 class PMVehicleTank extends ROVehicleTank;
 
+// Procedural track animation.
+// Bone information of the spline elements that the track mesh chain should move along.
+// TODO: Use sockets?
+struct TrackGuideBoneInfo
+{
+    var name BoneName;
+    // True if this track bone moves in relation to the track parent.
+    // E.g. track bones that move with the tank's suspension.
+    var bool bStaticBone;
+
+    StructDefaultProperties
+    {
+        bStaticBone=False
+    }
+};
+
+
+var(TrackAnim) class<PMTrackSplineActor> TrackSplineActorClass;
+
+// Display track spline debug information.
+var(TrackAnim) bool bDebugTrackSpline;
+
+// Left side track spline guide bone names.
+var(TrackAnim) array<TrackGuideBoneInfo> TrackGuideBoneInfosLeft;
+// Right side track spline guide bone names.
+var(TrackAnim) array<TrackGuideBoneInfo> TrackGuideBoneInfosRight;
+
+// Left side generated track spline actors.
+var(TrackAnim) array<PMTrackSplineActor> TrackSplineActorsLeft;
+// Right side generated track spline actors.
+var(TrackAnim) array<PMTrackSplineActor> TrackSplineActorsRight;
+
+// // Name the of left side track master (parent) skeletal controller.
+// var(TrackAnim) name TrackMasterSkelControlLeftName;
+// // Name the of right side track master (parent) skeletal controller.
+// var(TrackAnim) name TrackMasterSkelControlRightName;
+
+// var SkelControlSingleBone TrackMasterSkelControlLeft;
+// var SkelControlSingleBone TrackMasterSkelControlRight;
+
 var SoundCue ExplosionSoundCustom;
 
 var(Sounds) editconst const AudioComponent EngineSoundCustom;
@@ -157,6 +197,74 @@ simulated function PostBeginPlay()
     }
 
     SpawnExternallyVisibleSeatProxies();
+}
+
+simulated event PostInitAnimTree(SkeletalMeshComponent SkelComp)
+{
+    local int i;
+    local int j;
+    local PMTrackSplineActor TrackSpline;
+    local vector BoneLoc;
+    local rotator BoneRot;
+    local TrackGuideBoneInfo GuideInfo;
+
+    super.PostInitAnimTree(SkelComp);
+
+    if (SkelComp != Mesh)
+    {
+        return;
+    }
+
+    // if (TrackMasterSkelControlLeftName != '')
+    // {
+    //     TrackMasterSkelControlLeft = SkelControlSingleBone(Mesh.FindSkelControl(TrackMasterSkelControlLeftName));
+    // }
+
+    // if (TrackMasterSkelControlRightName != '')
+    // {
+    //     TrackMasterSkelControlRight = SkelControlSingleBone(Mesh.FindSkelControl(TrackMasterSkelControlRightName));
+    // }
+
+    for (i = 0; i < TrackGuideBoneInfosLeft.Length; ++i)
+    {
+        GuideInfo = TrackGuideBoneInfosLeft[i];
+        BoneRot = QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName));
+        BoneLoc = Mesh.GetBoneLocation(GuideInfo.BoneName);
+
+        TrackSpline = Spawn(TrackSplineActorClass, self,, BoneLoc, BoneRot,, True);
+        TrackSpline.SetBase(self,, Mesh, GuideInfo.BoneName);
+        TrackSpline.SetHardAttach(GuideInfo.bStaticBone);  // TODO: Should we use hard attach?
+
+        TrackSplineActorsLeft.AddItem(TrackSpline);
+
+        if (i > 0)
+        {
+            TrackSplineActorsLeft[i - 1].AddConnectionTo(TrackSpline);
+            // TODO: determine spline tangent? Is default OK?
+        }
+    }
+    // Connect last to first and complete the loop.
+    TrackSplineActorsLeft[TrackSplineActorsLeft.Length].AddConnectionTo(TrackSplineActorsLeft[0]);
+
+    // TODO: can we update them in the first loop?
+    for(i = 0; i < TrackSplineActorsLeft.Length; ++i)
+    {
+        if (bDebugTrackSpline)
+        {
+            TrackSplineActorsLeft[i].SetHidden(False);
+            for (j = 0; j < TrackSplineActorsLeft[i].Connections.Length; ++j)
+            {
+                TrackSplineActorsLeft[i].Connections[j].SplineComponent.SetHidden(False);
+            }
+        }
+
+        TrackSplineActorsLeft[i].UpdateConnectedSplineComponents(True);
+    }
+
+    // for (i = 0; i < TrackGuideBoneInfosRight.Length; ++i)
+    // {
+
+    // }
 }
 
 simulated function AttachBrokenTransmissionSound()
@@ -1837,4 +1945,11 @@ DefaultProperties
     bInfantryCanUse=True
 
     WeaponPawnClass=class'PMWeaponPawn'
+
+    TrackSplineActorClass=class'PMTrackSplineActor'
+
+    bDebugTrackSpline=True
+
+    // TrackMasterSkelControlLeftName=Track_Master_Left
+    // TrackMasterSkelControlRightName=Track_Master_Right
 }

@@ -2049,4 +2049,50 @@ DefaultProperties
     SpeedoMaxSpeed=1365 //100 km/h
 
     RanOverDamageType=PMDmgType_RunOver_Panzer4
+
+    TrackGuideBoneInfosLeft( 0)=(BoneName=L_Track_Front_Guide_05,bStaticBone=True) // Front sprocket top.
+    TrackGuideBoneInfosLeft( 1)=(BoneName=L_Track_Front_Guide_04,bStaticBone=True)
+    TrackGuideBoneInfosLeft( 2)=(BoneName=L_Track_Front_Guide_03,bStaticBone=True)
+    TrackGuideBoneInfosLeft( 3)=(BoneName=L_Track_Front_Guide_02,bStaticBone=True)
+    TrackGuideBoneInfosLeft( 4)=(BoneName=L_Track_Front_Guide_01,bStaticBone=True)
+    TrackGuideBoneInfosLeft( 5)=(BoneName=L_Track_01,bStaticBone=False)
+    TrackGuideBoneInfosLeft( 6)=(BoneName=L_Track_02,bStaticBone=False)
+    TrackGuideBoneInfosLeft( 7)=(BoneName=L_Track_03,bStaticBone=False)
+    TrackGuideBoneInfosLeft( 8)=(BoneName=L_Track_04,bStaticBone=False)
+    TrackGuideBoneInfosLeft( 9)=(BoneName=L_Track_05,bStaticBone=False)
+    TrackGuideBoneInfosLeft(10)=(BoneName=L_Track_06,bStaticBone=False)
+    TrackGuideBoneInfosLeft(11)=(BoneName=L_Track_07,bStaticBone=False)
+    TrackGuideBoneInfosLeft(12)=(BoneName=L_Track_08,bStaticBone=False)
+    TrackGuideBoneInfosLeft(13)=(BoneName=L_Track_Rear_Guide_04,bStaticBone=True)
+    TrackGuideBoneInfosLeft(14)=(BoneName=L_Track_Rear_Guide_02,bStaticBone=True)
+    TrackGuideBoneInfosLeft(15)=(BoneName=L_Track_Rear_Guide_03,bStaticBone=True)
+    TrackGuideBoneInfosLeft(16)=(BoneName=L_Track_Rear_Guide_01,bStaticBone=True)
+    TrackGuideBoneInfosLeft(17)=(BoneName=L_Track_Guide_01,bStaticBone=True)
+    TrackGuideBoneInfosLeft(18)=(BoneName=L_Track_Guide_02,bStaticBone=True)
+    TrackGuideBoneInfosLeft(19)=(BoneName=L_Track_Guide_03,bStaticBone=True)
+    TrackGuideBoneInfosLeft(20)=(BoneName=L_Track_Guide_04,bStaticBone=True)
+    TrackGuideBoneInfosLeft(21)=(BoneName=L_Track_Guide_05,bStaticBone=True)
+
+    // TrackGuideBoneNamesRight( 0)=R_Track_Front_Guide_05 // Front sprocket top.
+    // TrackGuideBoneNamesRight( 1)=R_Track_Front_Guide_04
+    // TrackGuideBoneNamesRight( 2)=R_Track_Front_Guide_03
+    // TrackGuideBoneNamesRight( 3)=R_Track_Front_Guide_02
+    // TrackGuideBoneNamesRight( 4)=R_Track_Front_Guide_01
+    // TrackGuideBoneNamesRight( 5)=R_Track_01
+    // TrackGuideBoneNamesRight( 6)=R_Track_02
+    // TrackGuideBoneNamesRight( 7)=R_Track_03
+    // TrackGuideBoneNamesRight( 8)=R_Track_04
+    // TrackGuideBoneNamesRight( 9)=R_Track_05
+    // TrackGuideBoneNamesRight(10)=R_Track_06
+    // TrackGuideBoneNamesRight(11)=R_Track_07
+    // TrackGuideBoneNamesRight(12)=R_Track_08
+    // TrackGuideBoneNamesRight(13)=R_Track_Rear_Guide_04
+    // TrackGuideBoneNamesRight(14)=R_Track_Rear_Guide_02
+    // TrackGuideBoneNamesRight(15)=R_Track_Rear_Guide_03
+    // TrackGuideBoneNamesRight(16)=R_Track_Rear_Guide_01
+    // TrackGuideBoneNamesRight(17)=R_Track_Guide_01
+    // TrackGuideBoneNamesRight(18)=R_Track_Guide_02
+    // TrackGuideBoneNamesRight(19)=R_Track_Guide_03
+    // TrackGuideBoneNamesRight(20)=R_Track_Guide_04
+    // TrackGuideBoneNamesRight(21)=R_Track_Guide_05
 }

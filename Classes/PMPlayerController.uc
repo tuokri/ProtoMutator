@@ -393,5 +393,4 @@ simulated function DoDamageProxy(int ProxyIndex, int DamageAmount)
 
 DefaultProperties
 {
-
 }
