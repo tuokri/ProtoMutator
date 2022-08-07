@@ -27,6 +27,10 @@ struct TrackGuideBoneInfo
     }
 };
 
+// Tread distance moved since last tick.
+var float TreadDistanceLeft;
+var float TreadDistanceRight;
+
 // Class of the track spline actor to spawn.
 var(TrackAnim) class<PMTrackSplineActor> TrackSplineActorClass;
 
@@ -257,15 +261,19 @@ simulated event Tick(float DeltaTime)
             TrackSplineActorsRight[i].UpdateSplineComponents();
         }
 
-        // for (i = 0; i < TrackPieceSplineMoversLeft.Length; ++i)
-        // {
+        // TODO: better move spline movers in their own tick function?
 
-        // }
+        TreadDistanceLeft = (LeftTreadSpeed - TreadDistanceLeft);
+        for (i = 0; i < TrackPieceSplineMoversLeft.Length; ++i)
+        {
+            TrackPieceSplineMoversLeft[i].SplineMove(TreadDistanceLeft);
+        }
 
-        // for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
-        // {
-
-        // }
+        TreadDistanceRight = (RightTreadSpeed - TreadDistanceRight);
+        for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
+        {
+            TrackPieceSplineMoversRight[i].SplineMove(TreadDistanceRight);
+        }
     }
 }
 
@@ -392,15 +400,16 @@ simulated function InitTrackSplines()
 simulated function InitSplineTrackPieces()
 {
     local int i;
-    local int NumPieces;
+    local int j;
     local int TotalNumPieces;
     local float TotalSplineLength;
-    local float SplineLength;
     local float Leftover;
+    local float DistanceAlongCurrentSpline;
+    local float CurrentSplineLength;
     local PMSplineMover TrackPiece;
     local PMTrackSplineActor CurrentSpline;
-    // local vector BoneWorldLoc;
-    // local rotator BoneWorldRot;
+    local vector LocationAlongSpline;
+    local rotator RotationAlongSpline;
     local vector SpawnLoc;
     local rotator SpawnRot;
 
@@ -414,29 +423,33 @@ simulated function InitSplineTrackPieces()
 
     `pmlog("TotalSplineLength  = " $ TotalSplineLength);
     `pmlog("TotalNumPieces     = " $ TotalNumPieces);
-    `pmlog("Leftover           = " $ Leftover);
+    `pmlog("Leftover (total)   = " $ Leftover);
+    // Distribute "leftover gap" evenly between pieces.
     Leftover /= TotalNumPieces;
-    `pmlog("Leftover (final)   = " $ Leftover);
+    `pmlog("Leftover (divided) = " $ Leftover);
 
-    for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
+    i = 0;
+    CurrentSpline = TrackSplineActorsLeft[i];
+    DistanceAlongCurrentSpline = Leftover;
+    CurrentSplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
+
+    for (j = 0; j < TotalNumPieces; ++j)
     {
         `pmlog("*** *** ***");
-        `pmlog(" Generating track pieces for TrackSplineActorsLeft[" $ i $ "]");
+        `pmlog(" Generating track piece [" $ j $ "/" $ TotalNumPieces $ "]");
 
-        CurrentSpline = TrackSplineActorsLeft[i];
+        `pmlog("  CurrentSpline              = " $ CurrentSpline @ i $ "/" $ TrackSplineActorsLeft.Length);
+        `pmlog("  CurrentSplineLength        = " $ CurrentSplineLength);
+        `pmlog("  DistanceAlongCurrentSpline = " $ DistanceAlongCurrentSpline);
 
-        SplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
+        LocationAlongSpline = CurrentSpline.Connections[0].SplineComponent.GetLocationAtDistanceAlongSpline(DistanceAlongCurrentSpline);
+        RotationAlongSpline = rotator(CurrentSpline.Connections[0].SplineComponent.GetTangentAtDistanceAlongSpline(DistanceAlongCurrentSpline));
 
-        `pmlog("  SplineLength = " $ SplineLength);
+        DistanceAlongCurrentSpline += TrackPieceWidth + TrackPieceOffset + Leftover;
 
-        NumPieces = SplineLength / (TrackPieceWidth + TrackPieceOffset);
+        SpawnLoc = LocationAlongSpline;
+        SpawnRot = RotationAlongSpline;
 
-        `pmlog("  NumPieces = " $ NumPieces);
-
-        // BoneWorldRot = QuatToRotator(Mesh.GetBoneQuaternion(TrackPieceBoneNamesLeft[i]));
-        // BoneWorldLoc = Mesh.GetBoneLocation(TrackPieceBoneNamesLeft[i]);
-
-        // TrackPiece = Spawn(SplineTrackPieceClass, self,, BoneWorldLoc, BoneWorldRot,, True);
         TrackPiece = Spawn(SplineTrackPieceClass, self,, SpawnLoc, SpawnRot,, True);
 
         if (TrackPiece == None)
@@ -445,7 +458,7 @@ simulated function InitSplineTrackPieces()
             continue;
         }
 
-        TrackPiece.TargetSpline = CurrentSpline;
+        TrackPiece.CurrentSpline = CurrentSpline;
 
         TrackPiece.SkeletalMeshComponent.SetSkeletalMesh(TrackPieceMesh);
         TrackPiece.SkeletalMeshComponent.SetShadowParent(Mesh);
@@ -459,20 +472,18 @@ simulated function InitSplineTrackPieces()
         TrackPiece.bCollideWorld = false;
         TrackPiece.SetLocation(SpawnLoc);
         TrackPiece.SetRotation(SpawnRot);
-
-        // TrackPiece.SetBase(self,, Mesh, TrackPieceBoneNamesLeft[i]);
         TrackPiece.SetBase(self);
 
-        // TODO: dynamic mover generation:
-        // Use track piece mesh width and generate X number of movers
-        // on track spline with Y offset between pieces?
-
-        // TrackPiece.CurrentSpline = None // get closest spline.
-        // figure out distance on spline for mover spawn position
-        // TrackPiece.SetLocation(); // get location along spline at distance
-        // TrackPiece.SetRotation(); // set rotation to tangent along spline
-
         TrackPieceSplineMoversLeft.AddItem(TrackPiece);
+
+        if ((DistanceAlongCurrentSpline >= CurrentSplineLength) /*|| (DistanceAlongCurrentSpline )*/)
+        {
+            i = (i + 1) % TrackSplineActorsLeft.Length;
+            CurrentSpline = TrackSplineActorsLeft[i];
+            DistanceAlongCurrentSpline = DistanceAlongCurrentSpline - CurrentSplineLength;
+            CurrentSplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
+            `pmlog("  new DistanceAlongCurrentSpline = " $ DistanceAlongCurrentSpline);
+        }
 
         `pmlog("  TrackPieces[" $ i $ "].Location = " $ TrackPiece.Location);
         `pmlog("  TrackPieces[" $ i $ "].Rotation = " $ TrackPiece.Rotation);
