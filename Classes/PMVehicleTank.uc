@@ -393,8 +393,10 @@ simulated function InitSplineTrackPieces()
 {
     local int i;
     local int NumPieces;
+    local int TotalNumPieces;
     local float TotalSplineLength;
     local float SplineLength;
+    local float Leftover;
     local PMSplineMover TrackPiece;
     local PMTrackSplineActor CurrentSpline;
     // local vector BoneWorldLoc;
@@ -404,12 +406,32 @@ simulated function InitSplineTrackPieces()
 
     for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
     {
+        TotalSplineLength += TrackSplineActorsLeft[i].Connections[0].SplineComponent.GetSplineLength();
+    }
+
+    TotalNumPieces = TotalSplineLength / (TrackPieceWidth + TrackPieceOffset);
+    Leftover = TotalSplineLength - (TotalNumPieces * TrackPieceWidth + TrackPieceOffset);
+
+    `pmlog("TotalSplineLength  = " $ TotalSplineLength);
+    `pmlog("TotalNumPieces     = " $ TotalNumPieces);
+    `pmlog("Leftover           = " $ Leftover);
+    Leftover /= TotalNumPieces;
+    `pmlog("Leftover (final)   = " $ Leftover);
+
+    for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
+    {
+        `pmlog("*** *** ***");
+        `pmlog(" Generating track pieces for TrackSplineActorsLeft[" $ i $ "]");
+
         CurrentSpline = TrackSplineActorsLeft[i];
 
         SplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
-        TotalSplineLength += SplineLength;
+
+        `pmlog("  SplineLength = " $ SplineLength);
 
         NumPieces = SplineLength / (TrackPieceWidth + TrackPieceOffset);
+
+        `pmlog("  NumPieces = " $ NumPieces);
 
         // BoneWorldRot = QuatToRotator(Mesh.GetBoneQuaternion(TrackPieceBoneNamesLeft[i]));
         // BoneWorldLoc = Mesh.GetBoneLocation(TrackPieceBoneNamesLeft[i]);
@@ -2139,6 +2161,9 @@ DefaultProperties
 
     TrackSplineActorClass=class'PMTrackSplineActor'
     SplineTrackPieceClass=class'PMSplineMover'
+
+    TrackPieceWidth = 4
+    TrackPieceOffset = 2
 
     bDebugTrackSpline=True
 
