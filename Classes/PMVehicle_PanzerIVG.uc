@@ -1744,23 +1744,25 @@ DefaultProperties
         FirstForwardGear=3
     End Object
 
-    TreadSpeedScale=2.75
+    TreadSpeedScale=-2.75
 
     // Muzzle Flashes
-    VehicleEffects(TankVFX_Firing1)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankMuzzle',EffectSocket=Barrel,bRestartRunning=true)
-    VehicleEffects(TankVFX_Firing2)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankCannon_Dust',EffectSocket=attachments_body_ground,bRestartRunning=true)
-    VehicleEffects(TankVFX_Firing3)=(EffectStartTag=PanzerIVGHullMG,EffectTemplate=ParticleSystem'FX_VN_Weapons.MuzzleFlashes.FX_VN_MuzzleFlash_3rdP_Rifles_round',EffectSocket=MG_Barrel)
-    VehicleEffects(TankVFX_Firing4)=(EffectStartTag=PanzerIVGCoaxMG,EffectTemplate=ParticleSystem'FX_VN_Weapons.MuzzleFlashes.FX_VN_MuzzleFlash_3rdP_Rifles_round',EffectSocket=CoaxMG)
+    // VehicleEffects(TankVFX_Firing1)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankMuzzle',EffectSocket=Barrel,bRestartRunning=true)
+    // VehicleEffects(TankVFX_Firing2)=(EffectStartTag=PanzerIVGCannon,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_B_TankCannon_Dust',EffectSocket=attachments_body_ground,bRestartRunning=true)
+    // VehicleEffects(TankVFX_Firing3)=(EffectStartTag=PanzerIVGHullMG,EffectTemplate=ParticleSystem'FX_VN_Weapons.MuzzleFlashes.FX_VN_MuzzleFlash_3rdP_Rifles_round',EffectSocket=MG_Barrel)
+    // VehicleEffects(TankVFX_Firing4)=(EffectStartTag=PanzerIVGCoaxMG,EffectTemplate=ParticleSystem'FX_VN_Weapons.MuzzleFlashes.FX_VN_MuzzleFlash_3rdP_Rifles_round',EffectSocket=CoaxMG)
     // Driving effects
-    VehicleEffects(TankVFX_Exhaust)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_TankExhaust',EffectSocket=Exhaust)
-    VehicleEffects(TankVFX_TreadWing)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,bStayActive=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Wing_Dirt_PZ4',EffectSocket=attachments_body_ground)
+    // VehicleEffects(TankVFX_Exhaust)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_TankExhaust',EffectSocket=Exhaust)
+    VehicleEffects(TankVFX_Exhaust)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,EffectTemplate=ParticleSystem'FX_VN_Helicopters.Emitter.FX_VN_EngineExhaust',EffectSocket=Exhaust)
+    // VehicleEffects(TankVFX_TreadWing)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,bStayActive=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Wing_Dirt_PZ4',EffectSocket=attachments_body_ground)
+    VehicleEffects(TankVFX_TreadWing)=(EffectStartTag=EngineStart,EffectEndTag=EngineStop,bStayActive=true,EffectTemplate=ParticleSystem'FX_VN_Helicopters.Emitter.FX_VN_EngineExhaust_Small',EffectSocket=attachments_body_ground)
     // Damage
-    VehicleEffects(TankVFX_DmgSmoke)=(EffectStartTag=DamageSmoke,EffectEndTag=NoDamageSmoke,bRestartRunning=false,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Damage',EffectSocket=attachments_engine)
-    VehicleEffects(TankVFX_DmgInterior)=(EffectStartTag=DamageInterior,EffectEndTag=NoInternalSmoke,bRestartRunning=false,bInteriorEffect=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_Interior_Penetrate',EffectSocket=attachments_body)
+    // VehicleEffects(TankVFX_DmgSmoke)=(EffectStartTag=DamageSmoke,EffectEndTag=NoDamageSmoke,bRestartRunning=false,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_Damage',EffectSocket=attachments_engine)
+    // VehicleEffects(TankVFX_DmgInterior)=(EffectStartTag=DamageInterior,EffectEndTag=NoInternalSmoke,bRestartRunning=false,bInteriorEffect=true,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_Interior_Penetrate',EffectSocket=attachments_body)
     // Death
-    VehicleEffects(TankVFX_DeathSmoke1)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_1)
-    VehicleEffects(TankVFX_DeathSmoke2)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_2)
-    VehicleEffects(TankVFX_DeathSmoke3)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_3)
+    // VehicleEffects(TankVFX_DeathSmoke1)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_1)
+    // VehicleEffects(TankVFX_DeathSmoke2)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_2)
+    // VehicleEffects(TankVFX_DeathSmoke3)=(EffectStartTag=Destroyed,EffectEndTag=NoDeathSmoke,EffectTemplate=ParticleSystem'PM_FX_VH_Tank.FX_VEH_Tank_A_SmallSmoke',EffectSocket=FX_Smoke_3)
 
     TrackSoundParamScale=0.00004    // top speed : 25,000
 
@@ -2064,8 +2066,8 @@ DefaultProperties
     TrackGuideBoneInfosLeft(11)=(BoneName=L_Track_07,bStaticBone=False)
     TrackGuideBoneInfosLeft(12)=(BoneName=L_Track_08,bStaticBone=False)
     TrackGuideBoneInfosLeft(13)=(BoneName=L_Track_Rear_Guide_04,bStaticBone=True)
-    TrackGuideBoneInfosLeft(14)=(BoneName=L_Track_Rear_Guide_02,bStaticBone=True)
-    TrackGuideBoneInfosLeft(15)=(BoneName=L_Track_Rear_Guide_03,bStaticBone=True)
+    TrackGuideBoneInfosLeft(14)=(BoneName=L_Track_Rear_Guide_03,bStaticBone=True)
+    TrackGuideBoneInfosLeft(15)=(BoneName=L_Track_Rear_Guide_02,bStaticBone=True)
     TrackGuideBoneInfosLeft(16)=(BoneName=L_Track_Rear_Guide_01,bStaticBone=True)
     TrackGuideBoneInfosLeft(17)=(BoneName=L_Track_Guide_01,bStaticBone=True)
     TrackGuideBoneInfosLeft(18)=(BoneName=L_Track_Guide_02,bStaticBone=True)
@@ -2095,4 +2097,60 @@ DefaultProperties
     // TrackGuideBoneNamesRight(19)=R_Track_Guide_03
     // TrackGuideBoneNamesRight(20)=R_Track_Guide_04
     // TrackGuideBoneNamesRight(21)=R_Track_Guide_05
+
+    // TODO: just give min and max indices and get these names dynamically?
+    // TODO: or just generate track piece meshes dynamically and don't use any bones at all?
+    TrackPieceBoneNamesLeft(000)="L_TrackPiece.000"
+    TrackPieceBoneNamesLeft(001)="L_TrackPiece.001"
+    TrackPieceBoneNamesLeft(002)="L_TrackPiece.002"
+    TrackPieceBoneNamesLeft(003)="L_TrackPiece.003"
+    TrackPieceBoneNamesLeft(004)="L_TrackPiece.004"
+    TrackPieceBoneNamesLeft(005)="L_TrackPiece.005"
+    TrackPieceBoneNamesLeft(006)="L_TrackPiece.006"
+    TrackPieceBoneNamesLeft(007)="L_TrackPiece.007"
+    TrackPieceBoneNamesLeft(008)="L_TrackPiece.008"
+    TrackPieceBoneNamesLeft(009)="L_TrackPiece.009"
+    TrackPieceBoneNamesLeft(010)="L_TrackPiece.010"
+    TrackPieceBoneNamesLeft(011)="L_TrackPiece.011"
+    TrackPieceBoneNamesLeft(012)="L_TrackPiece.012"
+    TrackPieceBoneNamesLeft(013)="L_TrackPiece.013"
+    TrackPieceBoneNamesLeft(014)="L_TrackPiece.014"
+    TrackPieceBoneNamesLeft(015)="L_TrackPiece.015"
+    TrackPieceBoneNamesLeft(016)="L_TrackPiece.016"
+    TrackPieceBoneNamesLeft(017)="L_TrackPiece.017"
+    TrackPieceBoneNamesLeft(018)="L_TrackPiece.018"
+    TrackPieceBoneNamesLeft(019)="L_TrackPiece.019"
+    TrackPieceBoneNamesLeft(020)="L_TrackPiece.020"
+    TrackPieceBoneNamesLeft(021)="L_TrackPiece.021"
+    TrackPieceBoneNamesLeft(022)="L_TrackPiece.022"
+    TrackPieceBoneNamesLeft(023)="L_TrackPiece.023"
+    TrackPieceBoneNamesLeft(024)="L_TrackPiece.024"
+    TrackPieceBoneNamesLeft(025)="L_TrackPiece.025"
+    TrackPieceBoneNamesLeft(026)="L_TrackPiece.026"
+    TrackPieceBoneNamesLeft(027)="L_TrackPiece.027"
+    TrackPieceBoneNamesLeft(028)="L_TrackPiece.028"
+    TrackPieceBoneNamesLeft(029)="L_TrackPiece.029"
+    TrackPieceBoneNamesLeft(030)="L_TrackPiece.030"
+    TrackPieceBoneNamesLeft(031)="L_TrackPiece.031"
+    TrackPieceBoneNamesLeft(032)="L_TrackPiece.032"
+    TrackPieceBoneNamesLeft(033)="L_TrackPiece.033"
+    TrackPieceBoneNamesLeft(034)="L_TrackPiece.034"
+    TrackPieceBoneNamesLeft(035)="L_TrackPiece.035"
+    TrackPieceBoneNamesLeft(036)="L_TrackPiece.036"
+    TrackPieceBoneNamesLeft(037)="L_TrackPiece.037"
+    TrackPieceBoneNamesLeft(038)="L_TrackPiece.038"
+    TrackPieceBoneNamesLeft(039)="L_TrackPiece.039"
+    TrackPieceBoneNamesLeft(040)="L_TrackPiece.040"
+    TrackPieceBoneNamesLeft(041)="L_TrackPiece.041"
+    TrackPieceBoneNamesLeft(042)="L_TrackPiece.042"
+    TrackPieceBoneNamesLeft(043)="L_TrackPiece.043"
+    TrackPieceBoneNamesLeft(044)="L_TrackPiece.044"
+    TrackPieceBoneNamesLeft(045)="L_TrackPiece.045"
+    TrackPieceBoneNamesLeft(046)="L_TrackPiece.046"
+    TrackPieceBoneNamesLeft(047)="L_TrackPiece.047"
+    TrackPieceBoneNamesLeft(048)="L_TrackPiece.048"
+    TrackPieceBoneNamesLeft(049)="L_TrackPiece.049"
+    TrackPieceBoneNamesLeft(050)="L_TrackPiece.050"
+
+    TrackPieceMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.TrackPiece'
 }

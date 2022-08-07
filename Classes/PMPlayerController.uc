@@ -1,5 +1,7 @@
 class PMPlayerController extends ROPlayerController;
 
+var MaterialInterface DebugCachedMat;
+
 simulated event PostBeginPlay()
 {
     super.PostBeginPlay();
@@ -269,7 +271,7 @@ reliable server function ServerSpawnVehicle(string TankContentClass)
         HitLoc = CamLoc + (vector(CamRot) * 250);
     }
 
-    HitLoc.Z += 250;
+    HitLoc.Z += 50;
 
     `pmlog(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
     ClientMessage(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
@@ -386,6 +388,90 @@ simulated function DoDamageProxy(int ProxyIndex, int DamageAmount)
     if (GetMyPMTank() != None)
     {
         GetMyPMTank().DebugDamageProxy(ProxyIndex, DamageAmount);
+    }
+}
+
+simulated exec function SetTankTrackSplineArrowSize(optional int ArrowSize = 5)
+{
+    local PMVehicleTank Tank;
+    local int i;
+    local int j;
+
+    ForEach AllActors(class'PMVehicleTank', Tank)
+    {
+        for (i = 0; i < Tank.TrackSplineActorsLeft.Length; ++i)
+        {
+            for (j = 0; j < Tank.TrackSplineActorsLeft[i].Connections.Length; ++j)
+            {
+                Tank.TrackSplineActorsLeft[i].Connections[j].SplineComponent.SplineArrowSize = ArrowSize;
+            }
+        }
+
+        for (i = 0; i < Tank.TrackSplineActorsRight.Length; ++i)
+        {
+            for (j = 0; j < Tank.TrackSplineActorsRight[i].Connections.Length; ++j)
+            {
+                Tank.TrackSplineActorsRight[i].Connections[j].SplineComponent.SplineArrowSize = ArrowSize;
+            }
+        }
+    }
+}
+
+simulated exec function SetTankTrackSplinesDepthToForeground(optional bool bForeGround = True)
+{
+    local PMVehicleTank Tank;
+    local int i;
+    local int j;
+    local ESceneDepthPriorityGroup DepthPrio;
+
+    // ConsoleCommand("show splines");
+
+    DepthPrio = bForeGround ? SDPG_Foreground : SDPG_World;
+
+    ForEach AllActors(class'PMVehicleTank', Tank)
+    {
+        for (i = 0; i < Tank.TrackSplineActorsLeft.Length; ++i)
+        {
+            for (j = 0; j < Tank.TrackSplineActorsLeft[i].Connections.Length; ++j)
+            {
+                Tank.TrackSplineActorsLeft[i].Connections[j].SplineComponent.SetDepthPriorityGroup(DepthPrio);
+            }
+        }
+
+        for (i = 0; i < Tank.TrackSplineActorsRight.Length; ++i)
+        {
+            for (j = 0; j < Tank.TrackSplineActorsRight[i].Connections.Length; ++j)
+            {
+                Tank.TrackSplineActorsRight[i].Connections[j].SplineComponent.SetDepthPriorityGroup(DepthPrio);
+            }
+        }
+    }
+}
+
+simulated exec function HideTrack(optional int TrackMaterialIndex = 1)
+{
+    local MaterialInterface InvisibleMat;
+    local MaterialInterface MatToSet;
+    local MaterialInterface CurrentMat;
+    local PMVehicleTank Tank;
+
+    InvisibleMat = Material'M_VN_Common_Characters.Materials.M_Hair_NoTransp';
+
+    ForEach AllActors(class'PMVehicleTank', Tank)
+    {
+        CurrentMat = Tank.Mesh.GetMaterial(TrackMaterialIndex);
+
+        if (CurrentMat == InvisibleMat)
+        {
+            MatToSet = DebugCachedMat;
+        }
+        else
+        {
+            DebugCachedMat = CurrentMat;
+            MatToSet = InvisibleMat;
+        }
+
+        Tank.Mesh.SetMaterial(TrackMaterialIndex, MatToSet);
     }
 }
 
