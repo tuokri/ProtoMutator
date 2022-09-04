@@ -486,7 +486,7 @@ simulated exec function SetDrawSplineTangents(bool bDraw)
 
 simulated exec function SpawnDynamicSMA()
 {
-    ServerSpawnActor("PMDynamicSMA");
+    ServerSpawnActor("PMDynamicSMActor");
 }
 
 reliable server function ServerSpawnActor(string ActorClass)
