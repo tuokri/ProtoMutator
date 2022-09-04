@@ -143,7 +143,7 @@ reliable protected server function ServerLeanLeft(bool leanstate)
 // -------------------- DEBUG HELPERS --------------------
 `ifdef(DEBUG_BUILD)
 
-exec function Camera(name NewMode)
+simulated exec function Camera(name NewMode)
 {
     ServerCamera(NewMode);
 }
@@ -176,12 +176,12 @@ reliable server function ServerCamera(name NewMode)
     }
 }
 
-exec function BlowUpVehiclesForceTurretBlowOff()
+simulated exec function BlowUpVehiclesForceTurretBlowOff()
 {
     ServerBlowUpVehicles(true, 3, true);
 }
 
-exec function BlowUpVehicles(optional bool bHitAmmo = false, optional int DeadVehicleType = 999,
+simulated exec function BlowUpVehicles(optional bool bHitAmmo = false, optional int DeadVehicleType = 999,
     optional bool bForceBlowOffTurret = false)
 {
     ServerBlowUpVehicles(bHitAmmo, DeadVehicleType, bForceBlowOffTurret);
@@ -239,12 +239,12 @@ private reliable server function ServerBlowUpVehicles(optional bool bHitAmmo = f
     }
 }
 
-exec function SpawnVehicle(string TankContentClass)
+simulated exec function SpawnVehicle(string TankContentClass)
 {
     ServerSpawnVehicle(TankContentClass);
 }
 
-exec function SpawnPanzerIVG()
+simulated exec function SpawnPanzerIVG()
 {
     SpawnVehicle("ProtoMutator.PMVehicle_PanzerIVG_Content");
 }
@@ -484,9 +484,14 @@ simulated exec function SetDrawSplineTangents(bool bDraw)
     }
 }
 
+simulated exec function SpawnActor(string ActorClass)
+{
+    ServerSpawnActor(ActorClass);
+}
+
 simulated exec function SpawnDynamicSMA()
 {
-    ServerSpawnActor("PMDynamicSMActor");
+    ServerSpawnActor("ProtoMutator.PMDynamicSMActor");
 }
 
 reliable server function ServerSpawnActor(string ActorClass)
