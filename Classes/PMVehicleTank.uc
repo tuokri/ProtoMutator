@@ -31,6 +31,8 @@ struct TrackGuideBoneInfo
 var float TreadDistanceLeft;
 var float TreadDistanceRight;
 
+var(TrackAnim) bool bDebugDrawSplineTangents;
+
 // Class of the track spline actor to spawn.
 var(TrackAnim) class<PMTrackSplineActor> TrackSplineActorClass;
 
@@ -48,14 +50,14 @@ var(TrackAnim) array<PMTrackSplineActor> TrackSplineActorsLeft;
 var(TrackAnim) array<PMTrackSplineActor> TrackSplineActorsRight;
 
 // Skeletal mesh to use for individual track pieces.
-var(TrackAnim) SkeletalMesh TrackPieceMesh;
+// var(TrackAnim) SkeletalMesh TrackPieceMesh;
 
 var(TrackAnim) class<PMSplineMover> SplineTrackPieceClass;
 
 // Names of left side track bones to spawn track pieces at.
-var(TrackAnim) array<name> TrackPieceBoneNamesLeft;
+// var(TrackAnim) array<name> TrackPieceBoneNamesLeft;
 // Names of right side track bones to spawn track pieces at.
-var(TrackAnim) array<name> TrackPieceBoneNamesRight;
+// var(TrackAnim) array<name> TrackPieceBoneNamesRight;
 
 var(TrackAnim) array<PMSplineMover> TrackPieceSplineMoversLeft;
 var(TrackAnim) array<PMSplineMover> TrackPieceSplineMoversRight;
@@ -64,6 +66,8 @@ var(TrackAnim) array<PMSplineMover> TrackPieceSplineMoversRight;
 var(TrackAnim) int TrackPieceWidth;
 // Offset (gap) between track pieces. Used in dynamic track piece generation.
 var(TrackAnim) int TrackPieceOffset;
+
+var(TrackAnim) int TrackPieceDistanceMultiplierOverride;
 
 // // Name the of left side track master (parent) skeletal controller.
 // var(TrackAnim) name TrackMasterSkelControlLeftName;
@@ -247,13 +251,15 @@ simulated event Tick(float DeltaTime)
         for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
         {
             // TODO: Update tangent for spline actors that move up/down with suspension?
-
-            // GuideInfo = TrackGuideBoneInfosLeft[i];
-            // TrackSpline.SetLocation(Mesh.GetBoneLocation(GuideInfo.BoneName);
-            // TrackSpline.SetRotation(QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName));
-
-            // TrackSplineActorsLeft[i].UpdateConnectedSplineComponents(True);
             TrackSplineActorsLeft[i].UpdateSplineComponents();
+
+            if (bDebugDrawSplineTangents)
+            {
+                DrawDebugSphere(TrackSplineActorsLeft[i].Location, 2.f, 4, 255, 255, 0);
+                DrawDebugLine(TrackSplineActorsLeft[i].Location, TrackSplineActorsLeft[i].GetWorldSpaceTangent(), 100, 100, 255);
+                DrawDebugLine(TrackSplineActorsLeft[i].Location, TrackSplineActorsLeft[i].Location + (25 * Normal(vector(TrackSplineActorsLeft[i].Rotation))), 100, 100, 255);
+                DrawDebugSphere(TrackSplineActorsLeft[i].GetWorldSpaceTangent(), 2.f, 4, 85, 15, 200);
+            }
         }
 
         for (i = 0; i < TrackSplineActorsRight.Length; ++i)
@@ -263,17 +269,21 @@ simulated event Tick(float DeltaTime)
 
         // TODO: better move spline movers in their own tick function?
 
-        TreadDistanceLeft = (LeftTreadSpeed - TreadDistanceLeft);
+        // TreadDistanceLeft = (LeftTreadSpeed - TreadDistanceLeft) * DeltaTime;
+        TreadDistanceLeft = (LeftTreadSpeed * DeltaTime * 0.15) - TreadDistanceLeft;
+
+        GetALocalPlayerController().ClientMessage("TreadDistanceLeft = " $ TreadDistanceLeft);
+        GetALocalPlayerController().ClientMessage("LeftTreadSpeed    = " $ LeftTreadSpeed);
         for (i = 0; i < TrackPieceSplineMoversLeft.Length; ++i)
         {
             TrackPieceSplineMoversLeft[i].SplineMove(TreadDistanceLeft);
         }
 
-        TreadDistanceRight = (RightTreadSpeed - TreadDistanceRight);
-        for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
-        {
-            TrackPieceSplineMoversRight[i].SplineMove(TreadDistanceRight);
-        }
+        // TreadDistanceRight = (RightTreadSpeed - TreadDistanceRight) * DeltaTime;
+        // for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
+        // {
+        //     TrackPieceSplineMoversRight[i].SplineMove(TreadDistanceRight);
+        // }
     }
 }
 
@@ -285,20 +295,8 @@ simulated function InitTrackSplines()
     local PMTrackSplineActor TrackSpline;
     local vector VecToNext;
     local vector BoneWorldLoc;
-    // local vector BoneLocalLoc;
     local rotator BoneWorldRot;
-    // local rotator BoneLocalRot;
     local TrackGuideBoneInfo GuideInfo;
-
-    // if (TrackMasterSkelControlLeftName != '')
-    // {
-    //     TrackMasterSkelControlLeft = SkelControlSingleBone(Mesh.FindSkelControl(TrackMasterSkelControlLeftName));
-    // }
-
-    // if (TrackMasterSkelControlRightName != '')
-    // {
-    //     TrackMasterSkelControlRight = SkelControlSingleBone(Mesh.FindSkelControl(TrackMasterSkelControlRightName));
-    // }
 
     for (i = 0; i < TrackGuideBoneInfosLeft.Length; ++i)
     {
@@ -308,13 +306,9 @@ simulated function InitTrackSplines()
         `pmlog("  BoneName  = " $ GuideInfo.BoneName);
         `pmlog("  BoneIndex = " $ Mesh.MatchRefBone(GuideInfo.BoneName));
         BoneWorldRot = QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 0));
-        // BoneLocalRot = QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1));
         BoneWorldLoc = Mesh.GetBoneLocation(GuideInfo.BoneName, 0);
-        // BoneLocalLoc = Mesh.GetBoneLocation(GuideInfo.BoneName, 1);
         `pmlog("  BoneWorldRot = " $ BoneWorldRot);
-        // `pmlog("  BoneLocalRot = " $ BoneLocalRot);
         `pmlog("  BoneWorldLoc = " $ BoneWorldLoc);
-        // `pmlog("  BoneLocalLoc = " $ BoneLocalLoc);
 
         TrackSpline = Spawn(TrackSplineActorClass, self,, BoneWorldLoc, BoneWorldRot,, True);
         `pmlog("  spawned " $ TrackSpline);
@@ -327,14 +321,10 @@ simulated function InitTrackSplines()
 
         TrackSpline.SetBase(None);
         TrackSpline.SetHardAttach(true);
-        // TrackSpline.SetHardAttach(GuideInfo.bStaticBone);  // TODO: Should we use hard attach?
         TrackSpline.SetPhysics(PHYS_Interpolating);
         TrackSpline.SetCollision(False, False);
         TrackSpline.bCollideWorld = false;
         TrackSpline.SetLocation(BoneWorldLoc);
-        // TODO: see if dynamic tangent calucation is better than manual bone rotation in all cases.
-        //       If it is (it probaby is), we can just do it by default for all spline actors.
-        // TrackSpline.SetRotation(BoneWorldRot);
         TrackSpline.SetRotation(rot(0, 0, 0));
 
         if (i > 0)
@@ -372,27 +362,22 @@ simulated function InitTrackSplines()
 
             // TODO: Just set the tangent X component. The rest should be handled when rotation is set??
             // TODO: experiment with different length multipliers.
-            TrackSplineActorsLeft[i].SplineActorTangent.X = VSize(VecToNext) * 0.7;
+            // TrackSplineActorsLeft[i].SplineActorTangent.X = VSize(VecToNext) * 0.7;
 
-            `pmlog("VSize(VecToNext)   = " $ VSize(VecToNext));
-            `pmlog("VSize2D(VecToNext) = " $ VSize2D(VecToNext));
+            // TrackSplineActorsLeft[i].SetRotation(
+            //     rotator(VecToNext /*<< QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1))*/));
 
-            TrackSplineActorsLeft[i].SetRotation(
-                rotator(VecToNext /*<< QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1))*/));
+            TrackSplineActorsLeft[i].SplineActorTangent = VecToNext << QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1));
+            `pmlog("  [" $ i $ "] Calculcated tangent = " $ VecToNext << QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1)));
         }
 
         TrackSplineActorsLeft[i].SetBase(self,, Mesh, GuideInfo.BoneName);
 
-        // TrackSplineActorsLeft[i].UpdateConnectedSplineComponents(True);
         TrackSplineActorsLeft[i].UpdateSplineComponents();
 
-        `log("  [" $ i $ "].SplineActorTangent = " $ TrackSplineActorsLeft[i].SplineActorTangent);
+        `pmlog("  [" $ i $ "].SplineActorTangent      = " $ TrackSplineActorsLeft[i].SplineActorTangent);
+        `pmlog("  [" $ i $ "].GetWorldSpaceTangent()  = " $ TrackSplineActorsLeft[i].GetWorldSpaceTangent());
     }
-
-    // for (i = 0; i < TrackGuideBoneInfosRight.Length; ++i)
-    // {
-
-    // }
 
     `pmlog("--- --- ---");
 }
@@ -410,16 +395,19 @@ simulated function InitSplineTrackPieces()
     local PMTrackSplineActor CurrentSpline;
     local vector LocationAlongSpline;
     local rotator RotationAlongSpline;
-    local vector SpawnLoc;
-    local rotator SpawnRot;
+
+    local float LengthConsumed;
+
+    TotalSplineLength = 0.f;
+    LengthConsumed = 0.f;
 
     for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
     {
         TotalSplineLength += TrackSplineActorsLeft[i].Connections[0].SplineComponent.GetSplineLength();
     }
 
-    TotalNumPieces = TotalSplineLength / (TrackPieceWidth + TrackPieceOffset);
-    Leftover = TotalSplineLength - (TotalNumPieces * TrackPieceWidth + TrackPieceOffset);
+    TotalNumPieces = FFloor(TotalSplineLength / (TrackPieceWidth + TrackPieceOffset));
+    Leftover = TotalSplineLength - (TotalNumPieces * (TrackPieceWidth + TrackPieceOffset));
 
     `pmlog("TotalSplineLength  = " $ TotalSplineLength);
     `pmlog("TotalNumPieces     = " $ TotalNumPieces);
@@ -427,30 +415,27 @@ simulated function InitSplineTrackPieces()
     // Distribute "leftover gap" evenly between pieces.
     Leftover /= TotalNumPieces;
     `pmlog("Leftover (divided) = " $ Leftover);
+    `pmlog("Calculcated total  = " $ TotalNumPieces * (TrackPieceWidth + TrackPieceOffset + Leftover));
 
     i = 0;
     CurrentSpline = TrackSplineActorsLeft[i];
-    DistanceAlongCurrentSpline = Leftover;
+    DistanceAlongCurrentSpline = 0.f;
+    // DistanceAlongCurrentSpline = Leftover;
     CurrentSplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
 
     for (j = 0; j < TotalNumPieces; ++j)
     {
         `pmlog("*** *** ***");
-        `pmlog(" Generating track piece [" $ j $ "/" $ TotalNumPieces $ "]");
+        `pmlog(" Generating track piece [" $ j $ "/" $ TotalNumPieces - 1 $ "]");
 
-        `pmlog("  CurrentSpline              = " $ CurrentSpline @ i $ "/" $ TrackSplineActorsLeft.Length);
+        `pmlog("  CurrentSpline              = " $ CurrentSpline @ i $ "/" $ TrackSplineActorsLeft.Length - 1);
         `pmlog("  CurrentSplineLength        = " $ CurrentSplineLength);
         `pmlog("  DistanceAlongCurrentSpline = " $ DistanceAlongCurrentSpline);
 
         LocationAlongSpline = CurrentSpline.Connections[0].SplineComponent.GetLocationAtDistanceAlongSpline(DistanceAlongCurrentSpline);
         RotationAlongSpline = rotator(CurrentSpline.Connections[0].SplineComponent.GetTangentAtDistanceAlongSpline(DistanceAlongCurrentSpline));
 
-        DistanceAlongCurrentSpline += TrackPieceWidth + TrackPieceOffset + Leftover;
-
-        SpawnLoc = LocationAlongSpline;
-        SpawnRot = RotationAlongSpline;
-
-        TrackPiece = Spawn(SplineTrackPieceClass, self,, SpawnLoc, SpawnRot,, True);
+        TrackPiece = Spawn(SplineTrackPieceClass, self,, LocationAlongSpline, RotationAlongSpline,, True);
 
         if (TrackPiece == None)
         {
@@ -458,9 +443,11 @@ simulated function InitSplineTrackPieces()
             continue;
         }
 
-        TrackPiece.CurrentSpline = CurrentSpline;
+        TrackPiece.DistanceMultiplier = TrackPieceDistanceMultiplierOverride;
+        // TrackPiece.SetCurrentSpline(CurrentSpline, DistanceAlongCurrentSpline);
+        TrackPiece.SetCurrentSpline(CurrentSpline);
 
-        TrackPiece.SkeletalMeshComponent.SetSkeletalMesh(TrackPieceMesh);
+        // TrackPiece.SkeletalMeshComponent.SetSkeletalMesh(TrackPieceMesh);
         TrackPiece.SkeletalMeshComponent.SetShadowParent(Mesh);
         TrackPiece.SkeletalMeshComponent.SetLightingChannels(ExteriorLightingChannels);
         TrackPiece.SkeletalMeshComponent.SetLightEnvironment(LightEnvironment);
@@ -470,13 +457,18 @@ simulated function InitSplineTrackPieces()
         TrackPiece.SetPhysics(PHYS_Interpolating);
         TrackPiece.SetCollision(False, False);
         TrackPiece.bCollideWorld = false;
-        TrackPiece.SetLocation(SpawnLoc);
-        TrackPiece.SetRotation(SpawnRot);
+        TrackPiece.SetLocation(LocationAlongSpline);
+        TrackPiece.SetRotation(RotationAlongSpline);
         TrackPiece.SetBase(self);
 
-        TrackPieceSplineMoversLeft.AddItem(TrackPiece);
+        // Debug.
+        LengthConsumed += DistanceAlongCurrentSpline;
 
-        if ((DistanceAlongCurrentSpline >= CurrentSplineLength) /*|| (DistanceAlongCurrentSpline )*/)
+        // Calculate distance for next iteration / track piece.
+        DistanceAlongCurrentSpline += TrackPieceWidth + TrackPieceOffset + Leftover;
+
+        // Longer than current spline -> set next spline actor and adjust distance.
+        if ((DistanceAlongCurrentSpline >= CurrentSplineLength))
         {
             i = (i + 1) % TrackSplineActorsLeft.Length;
             CurrentSpline = TrackSplineActorsLeft[i];
@@ -485,10 +477,15 @@ simulated function InitSplineTrackPieces()
             `pmlog("  new DistanceAlongCurrentSpline = " $ DistanceAlongCurrentSpline);
         }
 
-        `pmlog("  TrackPieces[" $ i $ "].Location = " $ TrackPiece.Location);
-        `pmlog("  TrackPieces[" $ i $ "].Rotation = " $ TrackPiece.Rotation);
+        TrackPieceSplineMoversLeft.AddItem(TrackPiece);
+
+        `pmlog("  TrackPieces[" $ j $ "].Location = " $ TrackPiece.Location);
+        `pmlog("  TrackPieces[" $ j $ "].Rotation = " $ TrackPiece.Rotation);
         `pmlog("--- --- ---");
     }
+
+    `pmlog("LengthConsumed    = " $ LengthConsumed);
+    `pmlog("TotalSplineLength = " $ TotalSplineLength);
 }
 
 simulated function AttachBrokenTransmissionSound()
@@ -1746,6 +1743,26 @@ simulated function BlowupVehicle()
 {
     local int i;
 
+    for (i = 0; i < TrackPieceSplineMoversLeft.Length; ++i)
+    {
+        TrackPieceSplineMoversLeft[i].Destroy();
+    }
+
+    for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
+    {
+        TrackPieceSplineMoversRight[i].Destroy();
+    }
+
+    for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
+    {
+        TrackSplineActorsLeft[i].Destroy();
+    }
+
+    for (i = 0; i < TrackSplineActorsRight.Length; ++i)
+    {
+        TrackSplineActorsRight[i].Destroy();
+    }
+
     VehicleEvent('EngineStop');
 
     // Must destroy these BEFORE GoToState('DyingVehicle').
@@ -2173,11 +2190,14 @@ DefaultProperties
     TrackSplineActorClass=class'PMTrackSplineActor'
     SplineTrackPieceClass=class'PMSplineMover'
 
-    TrackPieceWidth = 4
-    TrackPieceOffset = 2
-
+    TrackPieceWidth=4
+    TrackPieceOffset=2
+    TrackPieceDistanceMultiplierOverride=1
     bDebugTrackSpline=True
+    bDebugDrawSplineTangents=True
 
     // TrackMasterSkelControlLeftName=Track_Master_Left
     // TrackMasterSkelControlRightName=Track_Master_Right
+
+    // TrackPieceMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.TrackPiece'
 }

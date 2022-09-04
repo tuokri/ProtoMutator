@@ -50,7 +50,6 @@ exec function LeanLeft()
         }
     }
 
-
     ServerLeanLeft(True);
 }
 
@@ -475,8 +474,59 @@ simulated exec function HideTrack(optional int TrackMaterialIndex = 1)
     }
 }
 
+simulated exec function SetDrawSplineTangents(bool bDraw)
+{
+    local PMVehicleTank Tank;
+
+    ForEach AllActors(class'PMVehicleTank', Tank)
+    {
+        Tank.bDebugDrawSplineTangents = bDraw;
+    }
+}
+
+simulated exec function SpawnDynamicSMA()
+{
+    ServerSpawnActor("PMDynamicSMA");
+}
+
+reliable server function ServerSpawnActor(string ActorClass)
+{
+    local vector EndShot;
+    local vector CamLoc;
+    local vector HitLoc;
+    local vector HitNorm;
+    local rotator CamRot;
+    local class<Actor> LoadedActorClass;
+    local Actor A;
+
+    GetPlayerViewPoint(CamLoc, CamRot);
+    EndShot = CamLoc + (vector(CamRot) * 10000.0);
+
+    Trace(HitLoc, HitNorm, EndShot, CamLoc, true, vect(10,10,10));
+
+    if (IsZero(HitLoc))
+    {
+        `pmlog(self $ " trace failed, using fallback spawn location");
+        HitLoc = CamLoc + (vector(CamRot) * 250);
+    }
+
+    HitLoc.Z += 50;
+
+    `pmlog(self $ " attempting to spawn" @ ActorClass @ "at" @ HitLoc);
+    ClientMessage(self $ " attempting to spawn" @ ActorClass @ "at" @ HitLoc);
+
+    LoadedActorClass = class<Actor>(DynamicLoadObject(ActorClass, class'Class'));
+    if (LoadedActorClass != none)
+    {
+        A = Spawn(LoadedActorClass, , , HitLoc);
+        ClientMessage(self $ " spawned" @ LoadedActorClass @ A @ "at" @ A.Location);
+        `pmlog(self $ " spawned" @ LoadedActorClass @ A @ "at" @ A.Location);
+    }
+}
+
 `endif // DEBUG_BUILD
 
 DefaultProperties
 {
+    bDebugDamage=True
 }
