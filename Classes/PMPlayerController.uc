@@ -4,12 +4,90 @@ var MaterialInterface DebugCachedMat;
 
 simulated event PostBeginPlay()
 {
+    // local StaticMesh Test;
+    // local SeqAct_GetProperty GetProp;
+    // local EditorEngine Ed;
+    // local bool bResult;
+    // local int i;
+    // local array<string> Names;
+    // local GameEngine GE;
+    // local FullyLoadedPackagesInfo PackageInfo;
+    // local name PackageToLoad;
+    // local SeqVar_Object ObjIn;
+    // local SeqVar_Object ObjOut;
+
     super.PostBeginPlay();
 
     if (WorldInfo.NetMode == NM_Standalone)
     {
         GetPM().SetHUD();
     }
+
+    // GE = GameEngine(class'Engine'.static.GetEngine());
+    // `pmlog("GameEngine = " $ GE);
+
+    // bResult = GetPerObjectConfigSections(class'EditorEngine', Names);
+    // `pmlog("bResult = " $ bResult);
+    // if (bResult)
+    // {
+    //     for (i = 0; i < Names.Length; ++i)
+    //     {
+    //         `pmlog("Names[" $ i $ "]: " $ Names[i]);
+    //     }
+    // }
+
+    // ForEach GE.PackagesToFullyLoad(PackageInfo)
+    // {
+    //     ForEach PackageInfo.PackagesToLoad(PackageToLoad)
+    //     {
+    //         `pmlog("PackageToLoad = " $ PackageToLoad);
+    //     }
+    // }
+
+    // Ed = EditorEngine(FindObject("Transient.EditorEngine_0", class'EditorEngine'));
+    // `pmlog("Transient.EditorEngine_0 = " $ Ed);
+
+    // Test = new(self) class'StaticMesh';
+    // Test.LODInfo[0].Elements[0].bEnableCollision = false;
+
+    // GetProp = new(self) class'SeqAct_GetProperty';
+    // ObjOut = new(self) class'SeqVar_Object';
+    // GetProp.PropertyName = 'ForceLoadMods';
+    // GetProp.Targets[0] = Ed;
+    // // GetProp.VariableLinks[0].LinkedVariables[0] = Ed;
+    // GetProp.VariableLinks[1].LinkedVariables[0] = ObjOut;
+    // GetProp.ForceActivateInput(0);
+    // `pmlog("Transient.EditorEngine_0.ForceLoadMods:");
+    // `pmlog("ObjOut.GetObjectValue() = " $ ObjOut.GetObjectValue());
+
+    // GetProp = new(self) class'SeqAct_GetProperty';
+    // ObjOut = new(self) class'SeqVar_Object';
+
+    // `pmlog("GetProp  = " $ GetProp);
+    // `pmlog("ObjOut   = " $ ObjOut);
+
+    // GetProp.PropertyName = 'EditorEngine';
+    // GetProp.Targets[0] = GE;
+    // // GetProp.VariableLinks[0].LinkedVariables[0] = GE;
+    // GetProp.VariableLinks[1].LinkedVariables[0] = ObjOut;
+    // GetProp.ForceActivateInput(0);
+    // `pmlog("GameEngine.EditorEngine:");
+    // `pmlog("ObjOut.GetObjectValue() = " $ ObjOut.GetObjectValue());
+
+    // bResult = GetPerObjectConfigSections(class'EditorEngine', Names);
+    // `pmlog("bResult = " $ bResult);
+    // for (i = 0; i < Names.Length; ++i)
+    // {
+    //     `pmlog("Names[" $ i $ "]: " $ Names[i]);
+    // }
+
+    // ForEach GE.PackagesToFullyLoad(PackageInfo)
+    // {
+    //     ForEach PackageInfo.PackagesToLoad(PackageToLoad)
+    //     {
+    //         `pmlog("PackageToLoad = " $ PackageToLoad);
+    //     }
+    // }
 }
 
 function PM GetPM()
@@ -239,9 +317,9 @@ private reliable server function ServerBlowUpVehicles(optional bool bHitAmmo = f
     }
 }
 
-simulated exec function SpawnVehicle(string TankContentClass)
+simulated exec function SpawnVehicle(string VehicleContentClass)
 {
-    ServerSpawnVehicle(TankContentClass);
+    ServerSpawnVehicle(VehicleContentClass);
 }
 
 simulated exec function SpawnPanzerIVG()
@@ -249,7 +327,12 @@ simulated exec function SpawnPanzerIVG()
     SpawnVehicle("ProtoMutator.PMVehicle_PanzerIVG_Content");
 }
 
-reliable server function ServerSpawnVehicle(string TankContentClass)
+simulated exec function SpawnRenault4CV()
+{
+    SpawnVehicle("ProtoMutator.PMVehicle_Renault4CV_Content");
+}
+
+reliable server function ServerSpawnVehicle(string VehicleContentClass)
 {
     local vector EndShot;
     local vector CamLoc;
@@ -272,10 +355,10 @@ reliable server function ServerSpawnVehicle(string TankContentClass)
 
     HitLoc.Z += 50;
 
-    `pmlog(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
-    ClientMessage(self $ " attempting to spawn" @ TankContentClass @ "at" @ HitLoc);
+    `pmlog(self $ " attempting to spawn" @ VehicleContentClass @ "at" @ HitLoc);
+    ClientMessage(self $ " attempting to spawn" @ VehicleContentClass @ "at" @ HitLoc);
 
-    VehicleClass = class<ROVehicle>(DynamicLoadObject(TankContentClass, class'Class'));
+    VehicleClass = class<ROVehicle>(DynamicLoadObject(VehicleContentClass, class'Class'));
     if (VehicleClass != none)
     {
         ROV = Spawn(VehicleClass, , , HitLoc);
@@ -527,6 +610,20 @@ reliable server function ServerSpawnActor(string ActorClass)
         ClientMessage(self $ " spawned" @ LoadedActorClass @ A @ "at" @ A.Location);
         `pmlog(self $ " spawned" @ LoadedActorClass @ A @ "at" @ A.Location);
     }
+}
+
+simulated exec function FindObjectX(string FullObjectName, optional string ObjectClassName = "Object")
+{
+    local class<Object> ObjectClass;
+    ObjectClass = class<Object>(DynamicLoadObject(ObjectClassName, class'Class'));
+    `pmlog("Loaded class: " $ ObjectClass);
+    `pmlog("Found object: " $ FindObject(FullObjectName, ObjectClass));
+}
+
+function SetDisableTeamSwapTimer()
+{
+    // "Developer sanity".
+    return;
 }
 
 `endif // DEBUG_BUILD

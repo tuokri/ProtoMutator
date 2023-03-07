@@ -1,517 +1,244 @@
-// TODO: Add custom SoundCue support.
-// TODO: Add custom material support.
-// ROVehicleTank with some useful code taken from ROVehicleHelicopter.
-class PMVehicleTank extends ROVehicleTank
+class PMVehicleWheeled extends ROVehicleWheeled
     abstract;
 
-// Procedural track animation.
-// Bone information of the spline elements that the track mesh chain should move along.
-// TODO: Use sockets?
-struct TrackGuideBoneInfo
+var(Animation) AnimTree PassengerAnimTree;
+
+// Extra AnimSet for non-driver passengers.
+var(Animation) AnimSet PassengerAnimSet;
+
+var() float EngineRPM;
+
+var(Animation) name SteeringWheelSkelControlName;
+var(Animation) SkelControlSingleBone SteeringWheelSkelControl;
+var(Animation) float SteeringWheelSkelControlRotRatio;
+
+// TODO: We'll want these in the future.
+function SetPendingDestroyIfEmpty(float WaitToDestroyTime);
+function DestroyIfEmpty();
+function SelfDestructTankIfEmpty();
+
+simulated event PostInitAnimTree(SkeletalMeshComponent SkelComp)
 {
-    var name BoneName;
+    local int Idx;
 
-    // True if this track bone moves in relation to the track parent.
-    // E.g. track bones that move with the tank's suspension.
-    var bool bStaticBone;
+    super.PostInitAnimTree(SkelComp);
 
-    // True if this bone's spline actor should calculate the spline
-    // tangent dynamically. Otherwise use bone rotation and default
-    // tangent length. Should be true for bones that are not manually
-    // rotated to point at the next spline bone.
-    var bool bCalculateTangent;
-
-    StructDefaultProperties
+    if (SkelComp == Mesh)
     {
-        bStaticBone=False
-        bCalculateTangent=True
-    }
-};
-
-// Tread distance moved since last tick.
-var float TreadDistanceLeft;
-var float TreadDistanceRight;
-
-var(TrackAnim) bool bDebugDrawSplineTangents;
-
-// Class of the track spline actor to spawn.
-var(TrackAnim) class<PMTrackSplineActor> TrackSplineActorClass;
-
-// Display track spline debug information.
-var(TrackAnim) bool bDebugTrackSpline;
-
-// Left side track spline guide bone names.
-var(TrackAnim) array<TrackGuideBoneInfo> TrackGuideBoneInfosLeft;
-// Right side track spline guide bone names.
-var(TrackAnim) array<TrackGuideBoneInfo> TrackGuideBoneInfosRight;
-
-// Left side generated track spline actors.
-var(TrackAnim) array<PMTrackSplineActor> TrackSplineActorsLeft;
-// Right side generated track spline actors.
-var(TrackAnim) array<PMTrackSplineActor> TrackSplineActorsRight;
-
-// Skeletal mesh to use for individual track pieces.
-// var(TrackAnim) SkeletalMesh TrackPieceMesh;
-
-var(TrackAnim) class<PMSplineMover> SplineTrackPieceClass;
-
-// Names of left side track bones to spawn track pieces at.
-// var(TrackAnim) array<name> TrackPieceBoneNamesLeft;
-// Names of right side track bones to spawn track pieces at.
-// var(TrackAnim) array<name> TrackPieceBoneNamesRight;
-
-var(TrackAnim) array<PMSplineMover> TrackPieceSplineMoversLeft;
-var(TrackAnim) array<PMSplineMover> TrackPieceSplineMoversRight;
-
-// Width of an indiviual track piece. Used in dynamic track piece generation.
-var(TrackAnim) int TrackPieceWidth;
-// Offset (gap) between track pieces. Used in dynamic track piece generation.
-var(TrackAnim) int TrackPieceOffset;
-
-var(TrackAnim) int TrackPieceDistanceMultiplierOverride;
-
-// // Name the of left side track master (parent) skeletal controller.
-// var(TrackAnim) name TrackMasterSkelControlLeftName;
-// // Name the of right side track master (parent) skeletal controller.
-// var(TrackAnim) name TrackMasterSkelControlRightName;
-
-// var SkelControlSingleBone TrackMasterSkelControlLeft;
-// var SkelControlSingleBone TrackMasterSkelControlRight;
-
-var SoundCue ExplosionSoundCustom;
-
-var(Sounds) editconst const AudioComponent EngineSoundCustom;
-var(Sounds) editconst const AudioComponent SquealSoundCustom;
-
-// Engine start sounds.
-var AudioComponent  EngineStartLeftSoundCustom;
-var AudioComponent  EngineStartRightSoundCustom;
-var AudioComponent  EngineStartExhaustSoundCustom;
-var AudioComponent  EngineStopSoundCustom;
-
-var SoundCue EngineIdleSoundCustom;
-var SoundCue EngineIdleDamagedSoundCustom;
-var SoundCue TrackTakeDamageSoundCustom;
-var SoundCue TrackDamagedSoundCustom;
-var SoundCue TrackDestroyedSoundCustom;
-
-// Engine interior cabin sounds.
-var AudioComponent EngineIntLeftSoundCustom;
-var AudioComponent EngineIntRightSoundCustom;
-
-// Tread sounds.
-var AudioComponent  TrackLeftSoundCustom;
-var AudioComponent  TrackRightSoundCustom;
-
-// Tranmission sounds.
-var AudioComponent  BrokenTransmissionSoundCustom;
-
-// Brake sounds.
-var AudioComponent  BrakeLeftSoundCustom;
-var AudioComponent  BrakeRightSoundCustom;
-
-// Gear shift sounds.
-var SoundCue        ShiftUpSoundCustom;
-var SoundCue        ShiftDownSoundCustom;
-var SoundCue        ShiftLeverSoundCustom;
-
-// Turret rotation components.
-var AudioComponent  TurretTraverseSoundCustom;
-var AudioComponent  TurretMotorTraverseSoundCustom;
-var AudioComponent  TurretElevationSoundCustom;
-
-/** AnimTree for characters riding in this vehicle. */
-// TODO: useless variable as it doesn't differ from VehicleCrewProxy default AnimTree...
-var Animtree PassengerAnimTree;
-
-// NOTE: just a convenience enum to avoid magic values from legacy ROVehicle code.
-// TODO: Might want to move this to some common file.
-enum EDeadVehicleType
-{
-    EDVT_None,                              // 0
-    EDVT_Explosion,                         // 1
-    EDVT_AmmoExplosion,                     // 2
-    EDVT_AmmoExplosionTurretBlowoff,        // 3
-    EDVT_FireCrewEscape,                    // 4
-    EDVT_FireCrewEscapeFailed,              // 5
-};
-
-// Combined ROVehicleTank and ROVehicleTreaded PostBeginPlay here to get rid of
-// null component attachment warnings.
-simulated function PostBeginPlay()
-{
-    local int i;
-    local int NewSeatIndexHealths;
-    local int LoopMax;
-
-    Super(ROVehicle).PostBeginPlay();
-
-    if (bDeleteMe)
-    {
-        return;
-    }
-
-    if (WorldInfo.NetMode != NM_DedicatedServer && Mesh != None)
-    {
-        // set up material instance (for overlay effects)
-        LeftTreadMaterialInstance = Mesh.CreateAndSetMaterialInstanceConstant(1);
-        RightTreadMaterialInstance = Mesh.CreateAndSetMaterialInstanceConstant(2);
-    }
-
-    // Attach sound cues
-    if (WorldInfo.NetMode != NM_DedicatedServer)
-    {
-        Mesh.AttachComponentToSocket(EngineStartLeftSoundCustom, CabinL_FXSocket);
-        Mesh.AttachComponentToSocket(EngineStartRightSoundCustom, CabinR_FXSocket);
-        Mesh.AttachComponentToSocket(EngineStartExhaustSoundCustom, Exhaust_FXSocket);
-        Mesh.AttachComponentToSocket(EngineStopSoundCustom, Exhaust_FXSocket);
-        Mesh.AttachComponentToSocket(EngineIntLeftSoundCustom, CabinL_FXSocket);
-        Mesh.AttachComponentToSocket(EngineIntRightSoundCustom, CabinR_FXSocket);
-        Mesh.AttachComponentToSocket(EngineSoundCustom, Exhaust_FXSocket);
-        Mesh.AttachComponentToSocket(TrackLeftSoundCustom, TreadL_FXSocket);
-        Mesh.AttachComponentToSocket(TrackRightSoundCustom, TreadR_FXSocket);
-        Mesh.AttachComponentToSocket(BrakeLeftSoundCustom, TreadL_FXSocket);
-        Mesh.AttachComponentToSocket(BrakeRightSoundCustom, TreadR_FXSocket);
-    }
-
-    // Initialize vehicle hitzone healths
-    for (i = 0; i < VehHitZones.length; i++)
-    {
-        VehHitZoneHealths[i] = 255;
-
-        if( VehHitZones[i].VehicleHitZoneType == VHT_CrewHead || VehHitZones[i].VehicleHitZoneType == VHT_CrewBody )
+        if (SteeringWheelSkelControlName != '')
         {
-            CrewVehHitZoneIndexes[CrewVehHitZoneIndexes.Length] = i;
-        }
-    }
+            SteeringWheelSkelControl = SkelControlSingleBone(
+                Mesh.FindSkelControl(SteeringWheelSkelControlName));
 
-    // Initialize armor plate zone healths
-    for (i = 0; i < MAX_ARMOR_PLATE_ZONES; i++)
-    {
-        ArmorPlateZoneHealthsCompressed[i] = 255;
-    }
-
-    // Cache seat indexes
-    SeatIndexHullMG = GetHullMGSeatIndex();
-    SeatIndexGunner = GetGunnerSeatIndex();
-
-    if (Role == ROLE_Authority)
-    {
-        // GRIP BEGIN
-        // Create the Tank AI. It will be initialized later, in DriverEnter.
-        if( TankController == None )
-        {
-            TankController = Spawn(TankControllerClass, self, , Location, Rotation, , true);
-        }
-        // GRIP END
-
-        if( SeatProxies.Length > 7 )
-            LoopMax = 7;
-        else
-            LoopMax = SeatProxies.Length;
-
-        // Initialize the replicated seat proxy health values.
-        for ( i = 0; i < LoopMax; i++ )
-        {
-            NewSeatIndexHealths = (NewSeatIndexHealths - (NewSeatIndexHealths & (15 << (4 * i)))) | (int(SeatProxies[i].Health / 6.6666666) << (4 * i));
-        }
-        ReplicatedSeatProxyHealths = NewSeatIndexHealths;
-
-        if( LoopMax < SeatProxies.Length )
-        {
-            LoopMax = SeatProxies.Length;
-            NewSeatIndexHealths = 0;
-
-            // Initialize the remaining replicated seat proxy health values.
-            for ( i = 7; i < LoopMax; i++ )
+            if (SteeringWheelSkelControl != None)
             {
-                NewSeatIndexHealths = (NewSeatIndexHealths - (NewSeatIndexHealths & (15 << (4 * (i - 7))))) | (int(SeatProxies[i].Health / 6.6666666) << (4 * (i - 7)));
+                SteeringWheelSkelControl.SetSkelControlStrength(1.0, 0.0);
+                SteeringWheelSkelControl.bApplyTranslation = False;
+                SteeringWheelSkelControl.bApplyRotation = True;
+                SteeringWheelSkelControl.BoneRotationSpace = BCS_BoneSpace;
             }
-            ReplicatedSeatProxyHealths2 = NewSeatIndexHealths;
         }
-    }
 
-    SpawnExternallyVisibleSeatProxies();
-
-    if (WorldInfo.NetMode != NM_DedicatedServer && Mesh != None)
-    {
-        InitTrackSplines();
-        InitSplineTrackPieces();
+        for (Idx = 0; Idx < Wheels.Length; ++Idx)
+        {
+            Wheels[Idx].WheelControl.SetSkelControlStrength(1.0, 0.0);
+        }
     }
 }
 
 simulated event Tick(float DeltaTime)
 {
-    local int i;
-    // local TrackGuideBoneInfo GuideInfo;
+    local float Speed;
 
     super.Tick(DeltaTime);
 
-    if ((WorldInfo.NetMode != NM_DedicatedServer) && (LastRenderTime > WorldInfo.TimeSeconds - 0.1))
-    {
-        for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
-        {
-            // TODO: Update tangent for spline actors that move up/down with suspension?
-            TrackSplineActorsLeft[i].UpdateSplineComponents();
+    // TODO: do this with a timer instead?
+    // LookAtInfo
 
-            if (bDebugDrawSplineTangents)
+    // TODO: Use squared for performance?
+    // TODO: is this only needed on client? Keep it for both now.
+    // TODO: use ForwardVel here?
+    Speed = VSize(Velocity);
+    EngineRPM = EvalInterpCurveFloat(ROVehicleSimCar(SimObj).EngineRPMCurve, Speed);
+
+    // TODO: hard-coded for now. Make a better system. Another curve needed?
+    // TODO: cache StopThreshold as an instance variable?
+    if (Speed <= SVehicleSimCar(SimObj).StopThreshold)
+    {
+        // TODO: If if throttle != 0, just keep previous gear?
+        if (Throttle ~= 0.0)
+        {
+            OutputGear = 1; // Neutral.
+        }
+        else if (Throttle > 0 && ForwardVel > 0)
+        {
+            OutputGear = 2;
+        }
+        else if (Throttle < 0 && ForwardVel < 0)
+        {
+            OutputGear = 0;
+        }
+    }
+    else if (ForwardVel < 0)
+    {
+        OutputGear = 0;
+    }
+    else if (Speed >= 0 && Speed <= 549)
+    {
+        OutputGear = 2;
+    }
+    else if (Speed >= 550 && Speed <= 849)
+    {
+        OutputGear = 3;
+    }
+    else if (Speed >= 850 /*&& Speed <= 1100*/)
+    {
+        OutputGear = 4;
+    }
+    else
+    {
+        `pmlog("unable to determine OutputGear from Speed: " $ Speed);
+    }
+
+    // aladenberger 9/28/2010 - Delay gear shift for animation to play
+    if (ShiftTimeRemaining > 0.f)
+    {
+        ShiftTimeRemaining -= DeltaTime;
+        if (ShiftTimeRemaining <= 0.f)
+        {
+            // shift finished
+            DelayedOutputGear = TargetOutputGear;
+            if (DelayedOutputGear != OutputGear)
             {
-                DrawDebugSphere(TrackSplineActorsLeft[i].Location, 2.f, 4, 255, 255, 0);
-                DrawDebugLine(TrackSplineActorsLeft[i].Location, TrackSplineActorsLeft[i].GetWorldSpaceTangent(), 100, 100, 255);
-                DrawDebugLine(TrackSplineActorsLeft[i].Location, TrackSplineActorsLeft[i].Location + (25 * Normal(vector(TrackSplineActorsLeft[i].Rotation))), 100, 100, 255);
-                DrawDebugSphere(TrackSplineActorsLeft[i].GetWorldSpaceTangent(), 2.f, 4, 85, 15, 200);
+                // shift again without letting clutch up
+                TargetOutputGear = OutputGear;
+                ShiftTimeRemaining = GearShiftTime;
+                // begin client-side effects
+                PlayGearShift(true);
+            }
+            else
+            {
+                HandleDriverIKAction(DAct_Default);
             }
         }
+    }
+    else if (DelayedOutputGear != OutputGear)
+    {
+        // begin normal shift
+        TargetOutputGear = OutputGear;
+        ShiftTimeRemaining = ClutchInTime + GearShiftTime;
+        // begin client-side effects
+        PlayGearShift(false);
+    }
 
-        for (i = 0; i < TrackSplineActorsRight.Length; ++i)
-        {
-            TrackSplineActorsRight[i].UpdateSplineComponents();
-        }
+    // Client side effects follow.
+    if (WorldInfo.NetMode == NM_DedicatedServer)
+    {
+        return;
+    }
 
-        // TODO: better move spline movers in their own tick function?
-
-        // TreadDistanceLeft = (LeftTreadSpeed - TreadDistanceLeft) * DeltaTime;
-        TreadDistanceLeft = (LeftTreadSpeed * DeltaTime * 0.15) - TreadDistanceLeft;
-
-        GetALocalPlayerController().ClientMessage("TreadDistanceLeft = " $ TreadDistanceLeft);
-        GetALocalPlayerController().ClientMessage("LeftTreadSpeed    = " $ LeftTreadSpeed);
-        for (i = 0; i < TrackPieceSplineMoversLeft.Length; ++i)
-        {
-            TrackPieceSplineMoversLeft[i].SplineMove(TreadDistanceLeft);
-        }
-
-        // TreadDistanceRight = (RightTreadSpeed - TreadDistanceRight) * DeltaTime;
-        // for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
-        // {
-        //     TrackPieceSplineMoversRight[i].SplineMove(TreadDistanceRight);
-        // }
+    // TODO: interpolate? Need to smoothen this?
+    // TODO: add option to specify roll axes for wheels and steering wheel?.
+    if (SteeringWheelSkelControl != None)
+    {
+        // TODO: Add option to specify which wheel to use?
+        SteeringWheelSkelControl.BoneRotation.Roll = (
+            Wheels[2].Steer * DegToUnrRot) * SteeringWheelSkelControlRotRatio;
     }
 }
 
-simulated function InitTrackSplines()
+simulated function HandleDriverIKAction(DriverAction DAct)
 {
-    local int i;
-    local int j;
-    local int k;
-    local PMTrackSplineActor TrackSpline;
-    local vector VecToNext;
-    local vector BoneWorldLoc;
-    local rotator BoneWorldRot;
-    local TrackGuideBoneInfo GuideInfo;
+    local ROAnimNodeVehicleCrewIK DriverIK;
 
-    for (i = 0; i < TrackGuideBoneInfosLeft.Length; ++i)
+    if (WorldInfo.NetMode == NM_DedicatedServer)
     {
-        `pmlog("*** *** ***");
-        `pmlog("  i = " $ i);
-        GuideInfo = TrackGuideBoneInfosLeft[i];
-        `pmlog("  BoneName  = " $ GuideInfo.BoneName);
-        `pmlog("  BoneIndex = " $ Mesh.MatchRefBone(GuideInfo.BoneName));
-        BoneWorldRot = QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 0));
-        BoneWorldLoc = Mesh.GetBoneLocation(GuideInfo.BoneName, 0);
-        `pmlog("  BoneWorldRot = " $ BoneWorldRot);
-        `pmlog("  BoneWorldLoc = " $ BoneWorldLoc);
-
-        TrackSpline = Spawn(TrackSplineActorClass, self,, BoneWorldLoc, BoneWorldRot,, True);
-        `pmlog("  spawned " $ TrackSpline);
-
-        if (TrackSpline == None)
-        {
-            `pmlog("!!! ERROR !!! FAILED TO SPAWN " $ TrackSplineActorClass $ "(" $ i $ ")");
-            continue;
-        }
-
-        TrackSpline.SetBase(None);
-        TrackSpline.SetHardAttach(true);
-        TrackSpline.SetPhysics(PHYS_Interpolating);
-        TrackSpline.SetCollision(False, False);
-        TrackSpline.bCollideWorld = false;
-        TrackSpline.SetLocation(BoneWorldLoc);
-        TrackSpline.SetRotation(rot(0, 0, 0));
-
-        if (i > 0)
-        {
-            TrackSplineActorsLeft[i - 1].AddConnectionTo(TrackSpline);
-        }
-
-        TrackSplineActorsLeft.AddItem(TrackSpline);
+        return;
     }
 
-    // Connect last to first and complete the loop.
-    TrackSplineActorsLeft[TrackSplineActorsLeft.Length - 1].AddConnectionTo(TrackSplineActorsLeft[0]);
+    DriverIK = GetActiveIKNode(0, 1);
 
-    for(i = 0; i < TrackSplineActorsLeft.Length; ++i)
+    if (DriverIK != None)
     {
-        GuideInfo = TrackGuideBoneInfosLeft[i];
-
-        // TODO: SetHidden doesn't work. Use "SHOW SPLINES" console command to see the spline.
-        if (bDebugTrackSpline)
-        {
-            TrackSplineActorsLeft[i].SetHidden(False);
-            for (j = 0; j < TrackSplineActorsLeft[i].Connections.Length; ++j)
-            {
-                TrackSplineActorsLeft[i].Connections[j].SplineComponent.SetHidden(False);
-                TrackSplineActorsLeft[i].Connections[j].SplineComponent.SplineArrowSize = 5;
-            }
-        }
-
-        if (GuideInfo.bCalculateTangent)
-        {
-            // Index of next spline.
-            k = (i + 1) % TrackSplineActorsLeft.Length;
-
-            VecToNext = TrackSplineActorsLeft[k].Location - TrackSplineActorsLeft[i].Location;
-
-            // TODO: Just set the tangent X component. The rest should be handled when rotation is set??
-            // TODO: experiment with different length multipliers.
-            // TrackSplineActorsLeft[i].SplineActorTangent.X = VSize(VecToNext) * 0.7;
-
-            // TrackSplineActorsLeft[i].SetRotation(
-            //     rotator(VecToNext /*<< QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1))*/));
-
-            TrackSplineActorsLeft[i].SplineActorTangent = VecToNext << QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1));
-            `pmlog("  [" $ i $ "] Calculcated tangent = " $ VecToNext << QuatToRotator(Mesh.GetBoneQuaternion(GuideInfo.BoneName, 1)));
-        }
-
-        TrackSplineActorsLeft[i].SetBase(self,, Mesh, GuideInfo.BoneName);
-
-        TrackSplineActorsLeft[i].UpdateSplineComponents();
-
-        `pmlog("  [" $ i $ "].SplineActorTangent      = " $ TrackSplineActorsLeft[i].SplineActorTangent);
-        `pmlog("  [" $ i $ "].GetWorldSpaceTangent()  = " $ TrackSplineActorsLeft[i].GetWorldSpaceTangent());
+        DriverIK.HandleDriverAction(DAct);
     }
-
-    `pmlog("--- --- ---");
 }
 
-simulated function InitSplineTrackPieces()
+simulated function PlayGearShift(bool bContinued)
 {
-    local int i;
-    local int j;
-    local int TotalNumPieces;
-    local float TotalSplineLength;
-    local float Leftover;
-    local float DistanceAlongCurrentSpline;
-    local float CurrentSplineLength;
-    local PMSplineMover TrackPiece;
-    local PMTrackSplineActor CurrentSpline;
-    local vector LocationAlongSpline;
-    local rotator RotationAlongSpline;
-
-    local float LengthConsumed;
-
-    TotalSplineLength = 0.f;
-    LengthConsumed = 0.f;
-
-    for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
+    if (WorldInfo.NetMode == NM_DedicatedServer)
     {
-        TotalSplineLength += TrackSplineActorsLeft[i].Connections[0].SplineComponent.GetSplineLength();
+        return;
     }
 
-    TotalNumPieces = FFloor(TotalSplineLength / (TrackPieceWidth + TrackPieceOffset));
-    Leftover = TotalSplineLength - (TotalNumPieces * (TrackPieceWidth + TrackPieceOffset));
-
-    `pmlog("TotalSplineLength  = " $ TotalSplineLength);
-    `pmlog("TotalNumPieces     = " $ TotalNumPieces);
-    `pmlog("Leftover (total)   = " $ Leftover);
-    // Distribute "leftover gap" evenly between pieces.
-    Leftover /= TotalNumPieces;
-    `pmlog("Leftover (divided) = " $ Leftover);
-    `pmlog("Calculcated total  = " $ TotalNumPieces * (TrackPieceWidth + TrackPieceOffset + Leftover));
-
-    i = 0;
-    CurrentSpline = TrackSplineActorsLeft[i];
-    DistanceAlongCurrentSpline = 0.f;
-    // DistanceAlongCurrentSpline = Leftover;
-    CurrentSplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
-
-    for (j = 0; j < TotalNumPieces; ++j)
+    if (!bContinued)
     {
-        `pmlog("*** *** ***");
-        `pmlog(" Generating track piece [" $ j $ "/" $ TotalNumPieces - 1 $ "]");
-
-        `pmlog("  CurrentSpline              = " $ CurrentSpline @ i $ "/" $ TrackSplineActorsLeft.Length - 1);
-        `pmlog("  CurrentSplineLength        = " $ CurrentSplineLength);
-        `pmlog("  DistanceAlongCurrentSpline = " $ DistanceAlongCurrentSpline);
-
-        LocationAlongSpline = CurrentSpline.Connections[0].SplineComponent.GetLocationAtDistanceAlongSpline(DistanceAlongCurrentSpline);
-        RotationAlongSpline = rotator(CurrentSpline.Connections[0].SplineComponent.GetTangentAtDistanceAlongSpline(DistanceAlongCurrentSpline));
-
-        TrackPiece = Spawn(SplineTrackPieceClass, self,, LocationAlongSpline, RotationAlongSpline,, True);
-
-        if (TrackPiece == None)
-        {
-            `pmlog("!!! ERROR !!! FAILED TO SPAWN " $ SplineTrackPieceClass $ " (" $ i $ ")");
-            continue;
-        }
-
-        TrackPiece.DistanceMultiplier = TrackPieceDistanceMultiplierOverride;
-        // TrackPiece.SetCurrentSpline(CurrentSpline, DistanceAlongCurrentSpline);
-        TrackPiece.SetCurrentSpline(CurrentSpline);
-
-        // TrackPiece.SkeletalMeshComponent.SetSkeletalMesh(TrackPieceMesh);
-        TrackPiece.SkeletalMeshComponent.SetShadowParent(Mesh);
-        TrackPiece.SkeletalMeshComponent.SetLightingChannels(ExteriorLightingChannels);
-        TrackPiece.SkeletalMeshComponent.SetLightEnvironment(LightEnvironment);
-
-        TrackPiece.SetBase(None);
-        TrackPiece.SetHardAttach(true);
-        TrackPiece.SetPhysics(PHYS_Interpolating);
-        TrackPiece.SetCollision(False, False);
-        TrackPiece.bCollideWorld = false;
-        TrackPiece.SetLocation(LocationAlongSpline);
-        TrackPiece.SetRotation(RotationAlongSpline);
-        TrackPiece.SetBase(self);
-
-        // Debug.
-        LengthConsumed += DistanceAlongCurrentSpline;
-
-        // Calculate distance for next iteration / track piece.
-        DistanceAlongCurrentSpline += TrackPieceWidth + TrackPieceOffset + Leftover;
-
-        // Longer than current spline -> set next spline actor and adjust distance.
-        if ((DistanceAlongCurrentSpline >= CurrentSplineLength))
-        {
-            i = (i + 1) % TrackSplineActorsLeft.Length;
-            CurrentSpline = TrackSplineActorsLeft[i];
-            DistanceAlongCurrentSpline = DistanceAlongCurrentSpline - CurrentSplineLength;
-            CurrentSplineLength = CurrentSpline.Connections[0].SplineComponent.GetSplineLength();
-            `pmlog("  new DistanceAlongCurrentSpline = " $ DistanceAlongCurrentSpline);
-        }
-
-        TrackPieceSplineMoversLeft.AddItem(TrackPiece);
-
-        `pmlog("  TrackPieces[" $ j $ "].Location = " $ TrackPiece.Location);
-        `pmlog("  TrackPieces[" $ j $ "].Rotation = " $ TrackPiece.Rotation);
-        `pmlog("--- --- ---");
+        HandleDriverIKAction(DAct_ShiftGears);
     }
 
-    `pmlog("LengthConsumed    = " $ LengthConsumed);
-    `pmlog("TotalSplineLength = " $ TotalSplineLength);
+    // UROVehicleSimTreaded* ROVSim = Cast<UROVehicleSimTreaded>(SimObj);
+
+    // if ( TargetOutputGear < DelayedOutputGear )
+    // {
+    // 	PlayLocalVehicleSound(ShiftDownSound, Exhaust_FXSocket);
+    // }
+    // else if( ROVSim && TargetOutputGear != ROVSim->FirstForwardGear )
+    // {
+    // 	PlayLocalVehicleSound(ShiftUpSound, Exhaust_FXSocket);
+    // }
 }
 
-simulated function AttachBrokenTransmissionSound()
+event bool DriverLeave(bool bForceLeave)
 {
-    Mesh.AttachComponentToSocket(BrokenTransmissionSoundCustom, Exhaust_FXSocket);
+    local bool bLeft;
+    local ROPawn CachedDriver;
+
+    CachedDriver = ROPawn(Driver);
+    bLeft = Super.DriverLeave(bForceLeave);
+
+    if (bLeft && CachedDriver != None)
+    {
+        // Preserve momentum.
+        CachedDriver.Velocity = Velocity;
+    }
+
+    return bLeft;
 }
 
-// TODO: We'll want these in the future.
-function SetPendingDestroyIfEmpty(float WaitToDestroyTime);
-function DestroyIfEmpty();
-
-// Get engine output level for SoundCue parameters.
-// Adapted from ROVehicle native C++ version.
-// TODO: when adding SoundCue back-port code here, check this again!
-//       There are 2 versions of this in the native vehicle code.
-simulated function float GetEngineOutput()
+function PassengerLeave(int SeatIndex)
 {
-    // Scaled by gear change RPM.
-    // 0.0 = 0 RPM.
-    // 1.0 = ChangeUp RPM * 1.1.
-    // Set max clamp to 1.5 because the engine can actually go above
-    // ChangeUpPoint RPM in certain situations.
-    return FClamp(
-        ROVehicleSimTreaded(SimObj).EngineRPM / (ROVehicleSimTreaded(SimObj).ChangeUpPoint * 1.1f),
-        0.0, 1.5);
+	local ROPawn Left;
+
+	Left = ROPawn(Seats[SeatIndex].StoragePawn);
+
+    if (Left != None)
+    {
+        // Preserve momentum.
+        Left.Velocity = Velocity;
+    }
+
+    Super.PassengerLeave(SeatIndex);
+}
+
+simulated function SetInputs(float InForward, float InStrafe, float InUp)
+{
+    // local float Speed;
+
+    // Speed = VSize(Velocity);
+
+    // // Never throttle and brake at the same time!
+    // if ((Throttle < 0) && (Speed > 5) && (Speed <= SVehicleSimCar(SimObj).StopThreshold))
+    // {
+    //     Throttle = 0;
+    // }
+    // else
+    // {
+    //     Throttle = InForward;
+    // }
+
+    Throttle = InForward;
+    Rise = -InUp;
+    Steering = InStrafe;
 }
 
 // NOTE: From ROVehicleHelicopter.
@@ -521,8 +248,7 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
 
     `pmlog("ROP=" $ ROP $ " SeatIndex= " $ SeatIndex);
 
-    // NOTE: Ignore ROVehicleTank::SitDriver.
-    super(ROVehicleTreaded).SitDriver(ROP, SeatIndex);
+    super.SitDriver(ROP, SeatIndex);
 
     ROPC = ROPlayerController(FindVehicleLocalPlayerController(ROP, SeatIndex));
 
@@ -543,6 +269,7 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
     {
         ROP.Mesh.SetAnimTreeTemplate(PassengerAnimTree);
         ROP.HideGear(true);
+
         if (ROP.CurrentWeaponAttachment != none)
         {
             ROP.PutAwayWeaponAttachment();
@@ -593,8 +320,9 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
 
             SpawnOrReplaceSeatProxyCustom(SeatIndex, ROP, true);
 
+            // TODO: NOT FOR WHEELED VEHICLES.
             // Since we are entering a tank we want to spawn all the proxies.
-            SpawnSeatProxiesCustom(SeatIndex, ROP);
+            // SpawnSeatProxiesCustom(SeatIndex, ROP);
         }
         else if (ROAIController(ROP.Controller) != none && IsLocalPlayerInThisVehicle())
         {
@@ -621,6 +349,13 @@ simulated function SitDriver(ROPawn ROP, int SeatIndex)
        // IK update here to force client replication on vehicle entry, otherwise IK doesn't update until position change
        ROP.UpdateVehicleIK(self, SeatIndex, SeatPositionIndex(SeatIndex,, true));
     }
+}
+
+function EvaluateBackSeatDrivers()
+{
+	// No backseat driving.
+    BackSeatDriverIndex = 0;
+    SetBackSeatDriving(false);
 }
 
 simulated function PlayerController FindVehicleLocalPlayerController(ROPawn ROP, int SeatIndex, optional out Pawn LocalPawn)
@@ -803,7 +538,8 @@ simulated function SpawnOrReplaceSeatProxyCustom(
             // TODO: this check is not needed.
             if (CurrentProxyActor != none)
             {
-                CurrentProxyActor.bExposedToRain = (ROMI != none && ROMI.RainStrength != RAIN_None) && SeatProxies[i].bExposedToRain;
+                CurrentProxyActor.bExposedToRain = (
+                    ROMI != none && ROMI.RainStrength != RAIN_None) && SeatProxies[i].bExposedToRain;
             }
 
             // Create the proxy mesh for player-enterable seat from the Pawn.
@@ -1276,8 +1012,7 @@ simulated function HandleSeatTransition(ROPawn DriverPawn, int NewSeatIndex, int
 
     LogSeatProxyStates(self $ "_" $ GetFuncName() $ "(): before");
 
-    // Ignore ROVehicleTank::UpdateSeatProxyHealth
-    super(ROVehicleTreaded).HandleSeatTransition(DriverPawn, NewSeatIndex, OldSeatIndex, bInstantTransition);
+    super.HandleSeatTransition(DriverPawn, NewSeatIndex, OldSeatIndex, bInstantTransition);
 
     // Non-animated transition.
     if (bInstantTransition)
@@ -1488,8 +1223,7 @@ simulated function HandleProxySeatTransition(int NewSeatIndex, int OldSeatIndex)
  */
 function UpdateSeatProxyHealth(int SeatProxyIndex, int NewHealth, optional bool bIsTransition)
 {
-    // Ignore ROVehicleTank::UpdateSeatProxyHealth because it has leftover code from RO2.
-    super(ROVehicleTreaded).UpdateSeatProxyHealth(SeatProxyIndex, NewHealth, bIsTransition);
+    super.UpdateSeatProxyHealth(SeatProxyIndex, NewHealth, bIsTransition);
 }
 
 simulated function bool CanEnterVehicle(Pawn P)
@@ -1650,8 +1384,7 @@ simulated function DrivingStatusChanged()
 {
     //local ROPlayerController ROPC;
 
-    // NOTE: Ignore ROVehicleTank::DrivingStatusChanged.
-    super(ROVehicleTreaded).DrivingStatusChanged();
+    super.DrivingStatusChanged();
 
     /*ROPC = ROPlayerController(Driver.Controller);
 
@@ -1743,26 +1476,6 @@ simulated function SpawnSeatProxies()
 simulated function BlowupVehicle()
 {
     local int i;
-
-    for (i = 0; i < TrackPieceSplineMoversLeft.Length; ++i)
-    {
-        TrackPieceSplineMoversLeft[i].Destroy();
-    }
-
-    for (i = 0; i < TrackPieceSplineMoversRight.Length; ++i)
-    {
-        TrackPieceSplineMoversRight[i].Destroy();
-    }
-
-    for (i = 0; i < TrackSplineActorsLeft.Length; ++i)
-    {
-        TrackSplineActorsLeft[i].Destroy();
-    }
-
-    for (i = 0; i < TrackSplineActorsRight.Length; ++i)
-    {
-        TrackSplineActorsRight[i].Destroy();
-    }
 
     VehicleEvent('EngineStop');
 
@@ -2016,42 +1729,6 @@ simulated function SetVehicleDepthToForeground()
     SetInteriorVisibility(true);
 }
 
-// -------------------- DEBUG HELPERS --------------------
-`ifdef(DEBUG_BUILD)
-
-simulated function BlowupVehicleForcedTurretBlowOff()
-{
-    local int i;
-
-    VehicleEvent('EngineStop');
-
-    for (i = 0; i < EntryPoints.length; i++)
-    {
-        if (EntryPoints[i].EntryActor != none)
-        {
-            EntryPoints[i].EntryActor.SetBase(none);
-            EntryPoints[i].EntryActor.Destroy();
-            EntryPoints[i].EntryActor = none;
-        }
-    }
-
-    if (WorldInfo.NetMode != NM_Client)
-    {
-        DeadVehicleType = EDVT_AmmoExplosionTurretBlowoff;
-    }
-
-    bCanBeBaseForPawns = false;
-    GotoState('DyingVehicle');
-    AddVelocity(TearOffMomentum, TakeHitLocation, HitDamageType);
-    bDeadVehicle = true;
-    bStayUpright = false;
-
-    if (StayUprightConstraintInstance != None)
-    {
-        StayUprightConstraintInstance.TermConstraint();
-    }
-}
-
 simulated function LogSeatProxyStates(coerce string Msg = "")
 {
     local int i;
@@ -2178,27 +1855,94 @@ simulated function DebugDamageProxy(int ProxyIndex, int DamageAmount)
 
 `endif // DEBUG_BUILD
 
+simulated function GetSVehicleDebug(out Array<String> DebugInfo)
+{
+    local ROVehicleSimCar Sim;
+    local int Idx;
+
+    Sim = ROVehicleSimCar(SimObj);
+
+    Super.GetSVehicleDebug(DebugInfo);
+
+    DebugInfo[DebugInfo.Length] = "----PMVehicle----:";
+    DebugInfo[DebugInfo.Length] = "OutputGear         : " $ OutputGear;
+    DebugInfo[DebugInfo.Length] = "DelayedOutputGear  : " $ DelayedOutputGear;
+    DebugInfo[DebugInfo.Length] = "TargetOutputGear   : " $ TargetOutputGear;
+    DebugInfo[DebugInfo.Length] = "ShiftTimeRemaining : " $ ShiftTimeRemaining;
+
+    DebugInfo[DebugInfo.Length] = "ForwardVel: " $ ForwardVel;
+    DebugInfo[DebugInfo.Length] = "ActualThrottle: " $ Sim.ActualThrottle;
+    DebugInfo[DebugInfo.Length] = "RPM: " $ EngineRPM;
+    DebugInfo[DebugInfo.Length] = "Torque: " $ EvalInterpCurveFloat(Sim.TorqueVSpeedCurve, VSize(Velocity));
+
+    DebugInfo[DebugInfo.Length] = "Wheel : SuspensionPosition : SpinVel (rad/s) : ChassisTorque";
+    for (Idx = 0; Idx < Wheels.Length; ++Idx)
+    {
+        DebugInfo[DebugInfo.Length] = "Wheels[ " $ Idx
+            $ "]: " $ Wheels[Idx].SuspensionPosition
+            $ " : " $ Wheels[Idx].SpinVel
+            $ " : " $ Wheels[Idx].ChassisTorque;
+    }
+}
+
 DefaultProperties
 {
     // This is the same in VehicleCrewProxy, not sure why it's even needed.
     PassengerAnimTree=AnimTree'CHR_Playeranimtree_Master.CHR_Tanker_animtree'
 
-    // For debugging.
+    // PassengerAnimSet=
+
+    SteeringWheelSkelControlRotRatio=1.0
+
+    InertiaTensorMultiplier=(x=5.0,y=2.0,z=2.0)
+
     bInfantryCanUse=True
+    bStayUpright=False
+    UprightLiftStrength=1
+    UprightTime=2
+    UprightTorqueStrength=1
+    bCanFlip=False
 
-    WeaponPawnClass=class'PMWeaponPawn'
+    // TODO: make a reset mechanism.
+    bNeverReset=True
 
-    TrackSplineActorClass=class'PMTrackSplineActor'
-    SplineTrackPieceClass=class'PMSplineMover'
+    SpeedoMinDegree=5461
+    SpeedoMaxDegree=60075
+    SpeedoMaxSpeed=1365 // 100 km/h.
 
-    TrackPieceWidth=4
-    TrackPieceOffset=2
-    TrackPieceDistanceMultiplierOverride=1
-    bDebugTrackSpline=True
-    bDebugDrawSplineTangents=True
+    // Transmission.
+    DelayedOutputGear=1
+    ClutchInTime=0.2
+    GearShiftTime=0.4
 
-    // TrackMasterSkelControlLeftName=Track_Master_Left
-    // TrackMasterSkelControlRightName=Track_Master_Right
+    Health=500
 
-    // TrackPieceMesh=SkeletalMesh'PM_VH_Panzer_IVG.Mesh.TrackPiece'
+    // TODO: for minimal display? Need something similar?
+    // TransportArrayIndex=255
+
+    WeaponPawnClass=class'ROTransportWeaponPawn'
+    ClientWeaponPawnClass=class'ROTransportClientSideWeaponPawn'
+
+    bHasTurret=false
+
+    // CrewHitZoneStart=0
+    // CrewHitZoneEnd=0
+
+    // TODO: 2 long and 1.5 lat slip seems like a good tuning base point.
+
+    Begin Object Name=SimObject
+        ThrottleSpeed=0.4
+    End Object
+
+    // Begin Object Name=RRWheel
+    // End Object
+
+    // Begin Object Name=LRWheel
+    // End Object
+
+    // Begin Object Name=RFWheel
+    // End Object
+
+    // Begin Object Name=LFWheel
+    // End Object
 }

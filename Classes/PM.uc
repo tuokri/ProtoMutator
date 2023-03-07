@@ -3,7 +3,17 @@ class PM extends ROMutator
 
 function PreBeginPlay()
 {
-    ROGameInfo(WorldInfo.Game).PlayerControllerClass = class'PMPlayerController';
+    local ROGameInfo ROGI;
+
+    ROGI = ROGameInfo(WorldInfo.Game);
+
+    ROGI.PlayerControllerClass = class'PMPlayerController';
+
+    ROGI.NorthRoleContentClasses.LevelContentClasses[0] = "ProtoMutator.PMNorthPawn";
+	ROGI.SouthRoleContentClasses.LevelContentClasses[0] = "ProtoMutator.PMSouthPawn";
+	ROGI.SouthRoleFlamerContentClass = "ProtoMutator.PMSouthPawnFlamer";
+    ROGI.SouthRolePilotContentClass = "ProtoMutator.PMSouthPawnPilot";
+
     SetHUD();
 
     `pmlog("mutator init");
