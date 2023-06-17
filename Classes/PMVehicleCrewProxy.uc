@@ -1,50 +1,236 @@
 class PMVehicleCrewProxy extends VehicleCrewProxy;
 
-/**
- * Set the blend node to play the idle animation once the full body animation has finished
- */
-simulated event OnAnimEnd(AnimNodeSequence SeqNode, float PlayedTime, float ExcessTime)
+// TODO: disabled custom controls and nodes when playing full body anims?
+
+// TODO: palm twist not needed.
+// TODO: hand pose controllers.
+var(Animation) name LeftHandPalmTwistSkelControlName;
+var(Animation) SkelControl_TwistBone LeftHandPalmTwistSkelControl;
+
+var(Animation) name NeckLookAtSkelControlName;
+// Rotates neck towards head look at location.
+var(Animation) SkelControlLookAt NeckLookAtSkelControl;
+var(Animation) name HeadLookAtSkelControlName;
+// Controls head look at location (in world space).
+var(Animation) SkelControlLookAt HeadLookAtSkelControl;
+var(Animation) bool bHeadLookAtEnabled;
+// Cached LookAt location.
+var(Animation) vector HeadLookAtLocation;
+// Cached rotation of LookAt direction.
+var(Animation) rotator HeadLookAtRotation;
+
+// Cached vehicle reference.
+var() PMVehicleWheeled MyPMVehicleWheeled;
+
+// TODO: proxy hand poses.
+// 1. spawn in vehicle, normal state -> play same anim as normal node is playing.
+//     this means HandsBlendNode is disabled!
+// 2. want to do some special action (squeeze steering wheel, gestures?)
+//     -> enable HandsBlendNode
+var ROAnimNodeHandPoseBlend HandsBlendNode;
+var	AnimNodeSequence HandsSequencePlayerNode;
+
+simulated event Tick(float DeltaTime)
 {
-    local SeatProxy CurrentSeatProxy;
+    super.Tick(DeltaTime);
 
-    if( FullBodyBlendNode != none )
+    if (bHeadLookAtEnabled && HeadLookAtSkelControl != None)
     {
-        FullBodyBlendNode.SetBlendTarget(0.0f, 0.1f);
+        UpdateHeadLookAt();
     }
-
-    // Update the proxy's IK once an transition (FullBodyAnimation) has finished.
-    // This is done as a failsafe since animators can change the IK parameters during
-    // a transition animation using anim notifies.
-    CurrentSeatProxy = MyVehicle.SeatProxies[SeatProxyIndex];
-    UpdateVehicleIK(MyVehicle, CurrentSeatProxy.SeatIndex, CurrentSeatProxy.PositionIndex);
-    `pmlog("UpdateVehicleIK called for seat index " $ CurrentSeatProxy.SeatIndex $ " and position index " $ CurrentSeatProxy.PositionIndex);
 }
 
-simulated function PlayFullBodyAnimation(name AnimationName, float BlendTime = 0.1f, bool bLoop = false)
+simulated event PostInitAnimTree(SkeletalMeshComponent SkelComp)
 {
-    `pmlog("AnimationName=" $ AnimationName $ " BlendTime=" $ BlendTime $ " bLoop=" $ bLoop);
+    super.PostInitAnimTree(SkelComp);
 
-    if (AnimationName == '')
+    if (SkelComp == Mesh)
     {
-        `pmlog("WARNING: animation name missing!");
-        ROPlayerController(MyVehicle.Driver.Controller).ClientMessage(
-            self $ "->" $ GetFuncName() $ "(): WARNING: animation name missing!");
-        return;
+        HandsBlendNode = ROAnimNodeHandPoseBlend(Mesh.FindAnimNode('Blend_Hands'));
+        HandsSequencePlayerNode = AnimNodeSequence(Mesh.FindAnimNode('Seq_HandsAnim'));
+
+        // Disabled initially, enabled on demand.
+        // ROPawn disables these in AttachDriver.
+        EnableLeftHandPose(false);
+        EnableRightHandPose(false);
+
+        if (LeftHandPalmTwistSkelControlName != '')
+        {
+            LeftHandPalmTwistSkelControl = SkelControl_TwistBone(
+                Mesh.FindSkelControl(LeftHandPalmTwistSkelControlName));
+
+            if (LeftHandPalmTwistSkelControl != None)
+            {
+                LeftHandPalmTwistSkelControl.SetSkelControlActive(False);
+            }
+        }
+
+        if (HeadLookAtSkelControlName != '')
+        {
+            HeadLookAtSkelControl = SkelControlLookAt(
+                Mesh.FindSkelControl(HeadLookAtSkelControlName));
+
+            // TODO: since proxies shouldn't ever be player-controlled,
+            // do we even need to set this to true, ever? Maybe for debugging?
+            if (HeadLookAtSkelControl != None)
+            {
+                HeadLookAtSkelControl.SetSkelControlActive(False);
+                // TODO: should this be component space?
+                HeadLookAtSkelControl.TargetLocationSpace = BCS_WorldSpace;
+            }
+        }
+
+        if (NeckLookAtSkelControlName != '')
+        {
+            NeckLookAtSkelControl = SkelControlLookAt(
+                Mesh.FindSkelControl(NeckLookAtSkelControlName));
+
+            // TODO: since proxies shouldn't ever be player-controlled,
+            // do we even need to set this to true, ever? Maybe for debugging?
+            if (NeckLookAtSkelControl != None)
+            {
+                NeckLookAtSkelControl.SetSkelControlActive(False);
+            }
+        }
+    }
+}
+
+/** Function to enable/disable the left hand weapon pose.*/
+simulated function EnableLeftHandPose(optional bool bEnable=true)
+{
+    if(HandsBlendNode != none)
+    {
+        HandsBlendNode.EnableLeftHandPose(bEnable);
+    }
+}
+
+/** Function to enable/disable the right hand weapon pose. */
+simulated function EnableRightHandPose(optional bool bEnable=true)
+{
+    if (HandsBlendNode != none)
+    {
+        HandsBlendNode.EnableRightHandPose(bEnable);
+    }
+}
+
+simulated function SetHandsAnimation(name AnimationName)
+{
+    if (HandsSequencePlayerNode != none)
+    {
+        HandsSequencePlayerNode.SetAnim(AnimationName);
+        HandsSequencePlayerNode.SetPosition(0.0f, false);
+    }
+}
+
+simulated function UpdateVehicleIK(ROVehicle InVehicle, int InSeatIndex, byte InPositionIndex)
+{
+    local VehicleSeat CurrentSeat;
+    local PositionInfo CurrentSeatPosition;
+    local VehicleLookAtInfo LookAtInfo;
+
+    super.UpdateVehicleIK(InVehicle, InSeatIndex, InPositionIndex);
+
+    // Enabled for driver.
+    // SetLeftHandPalmTwistActive(InSeatIndex == 0);
+
+    if (InVehicle != none
+        && InSeatIndex < InVehicle.Seats.Length
+        && InPositionIndex < InVehicle.Seats[InSeatIndex].SeatPositions.Length)
+    {
+        // Get a reference to the VehicleIK info used.
+        CurrentSeat = InVehicle.Seats[InSeatIndex];
+        CurrentSeatPosition = CurrentSeat.SeatPositions[InPositionIndex];
+        if (CurrentSeat.CurrentInteraction.bInteractionActive)
+        {
+            LookAtInfo = CurrentSeat.CurrentInteraction.LookAtInfo;
+        }
+        else
+        {
+            LookAtInfo = CurrentSeatPosition.LookAtInfo;
+        }
+
+        // Toggle Look-at.
+        bHeadLookAtEnabled = LookAtInfo.LookAtEnabled;
+
+        if (HeadLookAtSkelControl != None)
+        {
+            if (bHeadLookAtEnabled)
+            {
+                UpdateHeadLookAt();
+
+                HeadLookAtSkelControl.SetSkelControlStrength(
+                    FClamp(LookAtInfo.HeadInfluence, 0.0, 1.0),
+                    HeadLookAtSkelControl.BlendInTime
+                );
+            }
+            else
+            {
+                HeadLookAtSkelControl.SetSkelControlActive(bHeadLookAtEnabled);
+            }
+        }
+
+        if (NeckLookAtSkelControl != None)
+        {
+            if (bHeadLookAtEnabled)
+            {
+                NeckLookAtSkelControl.SetSkelControlStrength(
+                    FClamp(LookAtInfo.HeadInfluence, 0.0, 1.0),
+                    NeckLookAtSkelControl.BlendInTime
+                );
+            }
+            else
+            {
+                NeckLookAtSkelControl.SetSkelControlActive(bHeadLookAtEnabled);
+            }
+        }
     }
 
-    if (FullBodyBlendNode != none && FullBodySequencePlayerNode != none)
+    // Disabled initially.
+    SetHandsAnimation(Mesh.GetCurrentAnimSeqName(false));
+    EnableLeftHandPose(false);
+    EnableRightHandPose(false);
+}
+
+simulated function UpdateHeadLookAt()
+{
+    if (MyPMVehicleWheeled != None)
     {
-        FullBodyBlendNode.SetBlendTarget(1.0f, BlendTime);
-        FullBodySequencePlayerNode.SetAnim(AnimationName);
-        FullBodySequencePlayerNode.PlayAnim(bLoop);
+        if (MyPMVehicleWheeled.GetSeatLookAt(
+                MyPMVehicleWheeled.SeatProxies[SeatProxyIndex].SeatIndex,
+                HeadLookAtLocation))
+        {
+            HeadLookAtSkelControl.TargetLocation = HeadLookAtLocation;
+        }
+        else
+        {
+            // TODO: use some safe default location here? Or just disable LookAt?
+            `pmlog("WARNING! GetSeatLookAt() not valid!");
+        }
     }
-    else
+}
+
+simulated function SetLeftHandPalmTwistActive(bool bActive)
+{
+    if (LeftHandPalmTwistSkelControl != None)
     {
-        `log("No full body node available to play full body animation!");
+        LeftHandPalmTwistSkelControl.SetSkelControlActive(bActive);
+    }
+}
+
+simulated function SetHeadLookAtActive(bool bActive)
+{
+    if (HeadLookAtSkelControl != None)
+    {
+        HeadLookAtSkelControl.SetSkelControlActive(bActive);
     }
 }
 
 DefaultProperties
 {
+    LeftHandPalmTwistSkelControlName=CHR_LArmPalm_Twist
+    HeadLookAtSkelControlName=LookAt_Head
 
+    Begin Object Name=ProxySkeletalMeshComponent
+        AnimTreeTemplate=AnimTree'RM_Common_Animation.Anim.CHR_Tanker_animtree_custom'
+    End Object
 }

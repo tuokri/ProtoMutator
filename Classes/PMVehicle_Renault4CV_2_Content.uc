@@ -24,6 +24,7 @@ DefaultProperties
 		SeatIndex=0,
 		PositionIndex=0,
 		bExposedToRain=false)}
+
 	SeatProxies(1)={(
 		TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Pilot_Mesh',
 		HeadGearMeshType=none,
@@ -35,6 +36,7 @@ DefaultProperties
 		SeatIndex=1,
 		PositionIndex=0,
 		bExposedToRain=false)}
+
 	SeatProxies(2)={(
 		TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Pilot_Mesh',
 		HeadGearMeshType=none,
@@ -46,6 +48,7 @@ DefaultProperties
 		SeatIndex=2,
 		PositionIndex=0,
 		bExposedToRain=false)}
+
 	SeatProxies(3)={(
 		TunicMeshType=SkeletalMesh'CHR_VN_US_Army.Mesh.US_Tunic_Pilot_Mesh',
 		HeadGearMeshType=none,

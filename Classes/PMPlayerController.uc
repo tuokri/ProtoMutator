@@ -219,7 +219,7 @@ reliable protected server function ServerLeanLeft(bool leanstate)
 }
 
 // -------------------- DEBUG HELPERS --------------------
-`ifdef(DEBUG_BUILD)
+`if(`isdefined(DEBUG_BUILD))
 
 simulated exec function Camera(name NewMode)
 {
@@ -327,9 +327,9 @@ simulated exec function SpawnPanzerIVG()
     SpawnVehicle("ProtoMutator.PMVehicle_PanzerIVG_Content");
 }
 
-simulated exec function SpawnRenault4CV()
+simulated exec function SpawnRenault4CV_2()
 {
-    SpawnVehicle("ProtoMutator.PMVehicle_Renault4CV_Content");
+    SpawnVehicle("ProtoMutator.PMVehicle_Renault4CV_2_Content");
 }
 
 reliable server function ServerSpawnVehicle(string VehicleContentClass)
@@ -343,7 +343,7 @@ reliable server function ServerSpawnVehicle(string VehicleContentClass)
     local ROVehicle ROV;
 
     GetPlayerViewPoint(CamLoc, CamRot);
-    EndShot = CamLoc + (vector(CamRot) * 10000.0);
+    EndShot = CamLoc + (Normal(vector(CamRot)) * 10000.0);
 
     Trace(HitLoc, HitNorm, EndShot, CamLoc, true, vect(10,10,10));
 
@@ -353,7 +353,7 @@ reliable server function ServerSpawnVehicle(string VehicleContentClass)
         HitLoc = CamLoc + (vector(CamRot) * 250);
     }
 
-    HitLoc.Z += 50;
+    HitLoc.Z += 150;
 
     `pmlog(self $ " attempting to spawn" @ VehicleContentClass @ "at" @ HitLoc);
     ClientMessage(self $ " attempting to spawn" @ VehicleContentClass @ "at" @ HitLoc);
@@ -363,6 +363,7 @@ reliable server function ServerSpawnVehicle(string VehicleContentClass)
     {
         ROV = Spawn(VehicleClass, , , HitLoc);
         ROV.Mesh.AddImpulse(vect(0,0,1), ROV.Location);
+        ROV.SetTeamNum(GetTeamNum());
         ClientMessage(self $ " spawned" @ VehicleClass @ ROV @ "at" @ ROV.Location);
         `pmlog(self $ " spawned" @ VehicleClass @ ROV @ "at" @ ROV.Location);
     }

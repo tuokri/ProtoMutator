@@ -7,7 +7,7 @@ DefaultProperties
     bOpenVehicle=True
     bTeamLocked=False
 
-    COMOffset=(x=15.0,y=0.0,z=-50.0)
+    COMOffset=(x=20.0,y=0.0,z=-50.0)
     InertiaTensorMultiplier=(x=5.0,y=2.0,z=2.0)
     ExitRadius=180
     ExitOffset=(X=-150,Y=0,Z=0)
@@ -25,9 +25,29 @@ DefaultProperties
 
     CrewAnimSet=AnimSet'VH_VN_ARVN_M113_APC.Anim.CHR_M113_Anim_Master'
 
+    Begin Object class=PointLightComponent name=InteriorLight_0
+		Radius=100.0
+		LightColor=(R=255,G=170,B=130)
+		UseDirectLightMap=FALSE
+		Brightness=1.0
+		LightingChannels=(Unnamed_1=TRUE,BSP=FALSE,Static=FALSE,Dynamic=FALSE,CompositeDynamic=FALSE)
+	End Object
+
+	Begin Object class=PointLightComponent name=InteriorLight_1
+		Radius=100.0
+		LightColor=(R=255,G=170,B=130)
+		UseDirectLightMap=FALSE
+		Brightness=1.0
+		LightingChannels=(Unnamed_1=TRUE,BSP=FALSE,Static=FALSE,Dynamic=FALSE,CompositeDynamic=FALSE)
+	End Object
+
+    VehicleLights(0)={(AttachmentName=InteriorLightComponent0,Component=InteriorLight_0,bAttachToSocket=true,AttachmentTargetName=interior_light_0)}
+	VehicleLights(1)={(AttachmentName=InteriorLightComponent1,Component=InteriorLight_1,bAttachToSocket=true,AttachmentTargetName=interior_light_1)}
+
     Seats.Empty
 
     Seats(0)={(
+        bNonEnterable=false,
         CameraTag=none,
         bSeatVisible=true,
         CameraOffset=-420,
@@ -44,7 +64,8 @@ DefaultProperties
                 bAllowFocus=true,
                 PositionCameraTag=None,
                 ViewFOV=70.0,
-                PositionUpAnim=Driver_idle,
+                PositionUpAnim=none,
+                PositionDownAnim=none,
                 PositionIdleAnim=Driver_idle,
                 DriverIdleAnim=Driver_idle,
                 AlternateIdleAnim=Driver_idle,
@@ -67,14 +88,21 @@ DefaultProperties
                             Action=DAct_ShiftGears,
                             IKEnabled=true,
                             EffectorLocationTargetName=IK_GearShifter,
-                            EffectorRotationTargetName=IK_GearShifter
-                        )
+                            EffectorRotationTargetName=IK_GearShifter,
+                        ),
+                        // (
+                        //     Action=DAct_SteerSwap_RHOn,
+                        //     IKEnabled=true,
+                        //     EffectorLocationTargetName=IK_RightSteer_Swap,
+                        //     EffectorRotationTargetName=IK_RightSteer_Swap,
+                        // ),
                     )
                 ),
-                LeftFootIKInfo=(
+                LeftFootIKInfo=
+                (
                     IKEnabled=true,
-                    DefaultEffectorLocationTargetName=IK_ClutchPedal,
-                    DefaultEffectorRotationTargetName=IK_ClutchPedal,
+                    DefaultEffectorLocationTargetName=IK_Driver_LeftFoot,
+                    DefaultEffectorRotationTargetName=IK_Driver_LeftFoot,
                     AlternateEffectorTargets=
                     (
                         (
@@ -85,14 +113,27 @@ DefaultProperties
                         )
                     )
                 ),
-                RightFootIKInfo=(
+                RightFootIKInfo=
+                (
                     IKEnabled=true,
                     DefaultEffectorLocationTargetName=IK_AcceleratorPedal,
                     DefaultEffectorRotationTargetName=IK_AcceleratorPedal
                 ),
-                HipsIKInfo=(PinEnabled=true),
+                HipsIKInfo=
+                (
+                    PinEnabled=true,
+                    DefaultEffectorLocationTargetName=DriverAttach,
+                    DefaultEffectorRotationTargetName=DriverAttach,
+                ),
                 PositionFlinchAnims=(Driver_idle),
-                PositionDeathAnims=(Driver_Death)
+                PositionDeathAnims=(Driver_Death),
+                LookAtInfo=
+                (
+                    LookAtEnabled=true,
+                    DefaultLookAtTargetName=LookAt_Driver,
+                    HeadInfluence=1.0,
+                    BodyInfluence=1.0
+                )
             ),
             // 1 is just a copy of 0. Has to be here since native has hard-coded position index 1.
             // TODO: test if removing this causes issues.
@@ -101,7 +142,8 @@ DefaultProperties
                 bAllowFocus=true,
                 PositionCameraTag=None,
                 ViewFOV=70.0,
-                PositionUpAnim=Driver_idle,
+                PositionUpAnim=none,
+                PositionDownAnim=none,
                 PositionIdleAnim=Driver_idle,
                 DriverIdleAnim=Driver_idle,
                 AlternateIdleAnim=Driver_idle,
@@ -124,14 +166,21 @@ DefaultProperties
                             Action=DAct_ShiftGears,
                             IKEnabled=true,
                             EffectorLocationTargetName=IK_GearShifter,
-                            EffectorRotationTargetName=IK_GearShifter
-                        )
+                            EffectorRotationTargetName=IK_GearShifter,
+                        ),
+                        // (
+                        //     Action=DAct_SteerSwap_RHOn,
+                        //     IKEnabled=true,
+                        //     EffectorLocationTargetName=IK_RightSteer_Swap,
+                        //     EffectorRotationTargetName=IK_RightSteer_Swap,
+                        // ),
                     )
                 ),
-                LeftFootIKInfo=(
+                LeftFootIKInfo=
+                (
                     IKEnabled=true,
-                    DefaultEffectorLocationTargetName=IK_ClutchPedal,
-                    DefaultEffectorRotationTargetName=IK_ClutchPedal,
+                    DefaultEffectorLocationTargetName=IK_Driver_LeftFoot,
+                    DefaultEffectorRotationTargetName=IK_Driver_LeftFoot,
                     AlternateEffectorTargets=
                     (
                         (
@@ -142,37 +191,42 @@ DefaultProperties
                         )
                     )
                 ),
-                RightFootIKInfo=(
+                RightFootIKInfo=
+                (
                     IKEnabled=true,
                     DefaultEffectorLocationTargetName=IK_AcceleratorPedal,
-                    DefaultEffectorRotationTargetName=IK_AcceleratorPedal,
-                    // AlternateEffectorTargets=
-                    // (
-                    //     (
-                    //         Action=DAct_Brake,
-                    //         IKEnabled=true,
-                    //         EffectorLocationTargetName=IK_BrakePedal,
-                    //         EffectorRotationTargetName=IK_BrakePedal
-                    //     )
-                    // )
+                    DefaultEffectorRotationTargetName=IK_AcceleratorPedal
                 ),
-                HipsIKInfo=(PinEnabled=true),
+                HipsIKInfo=
+                (
+                    PinEnabled=true,
+                    DefaultEffectorLocationTargetName=DriverAttach,
+                    DefaultEffectorRotationTargetName=DriverAttach,
+                ),
                 PositionFlinchAnims=(Driver_idle),
-                PositionDeathAnims=(Driver_Death)
-            )
+                PositionDeathAnims=(Driver_Death),
+                LookAtInfo=
+                (
+                    LookAtEnabled=true,
+                    DefaultLookAtTargetName=LookAt_Driver,
+                    HeadInfluence=1.0,
+                    BodyInfluence=1.0
+                )
+            ),
         )
     )}
 
     Seats(1)={(
+        bNonEnterable=true, // TODO: non-enterable for testing!
         CameraTag=none,
         bSeatVisible=true,
-        bNonEnterable=false,
         CameraOffset=-420,
         DriverDamageMult=1.0,
         SeatAnimBlendName=Pass1PositionNode,
         SeatBone=PassengerAttach_FrontRight,
         InitialPositionIndex=0,
         SeatRotation=(Pitch=0,Yaw=0,Roll=0),
+        SeatOffset=(X=0,Y=0,Z=0),
         TurretVarPrefix="PassengerOne",
         SeatPositions=
         (
@@ -188,21 +242,53 @@ DefaultProperties
                 DriverIdleAnim=Pass04_Idle,
                 AlternateIdleAnim=Pass04_Idle,
                 PositionFlinchAnims=(Pass04_Idle),
-                PositionDeathAnims=(Pass04_Death)
+                PositionDeathAnims=(Pass04_Death),
+                HipsIKInfo=
+                (
+                    PinEnabled=true,
+                    DefaultEffectorLocationTargetName=PassengerAttach_FrontRight,
+                    DefaultEffectorRotationTargetName=PassengerAttach_FrontRight,
+                ),
+                LeftFootIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=IK_Passenger_Front_LeftFoot,
+                    DefaultEffectorRotationTargetName=IK_Passenger_Front_LeftFoot
+                ),
+                RightFootIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=IK_Passenger_Front_RightFoot,
+                    DefaultEffectorRotationTargetName=IK_Passenger_Front_RightFoot
+                ),
+                LookAtInfo=
+                (
+                    LookAtEnabled=true,
+                    DefaultLookAtTargetName=LookAt_Passenger_FrontRight,
+                    HeadInfluence=1.0,
+                    BodyInfluence=1.0
+                ),
+                LeftHandIKInfo=
+                (
+                    IKEnabled=false,
+                    DefaultEffectorLocationTargetName=PointAt_Passenger_FrontRight,
+                    DefaultEffectorRotationTargetName=PointAt_Passenger_FrontRight
+                ),
             )
         )
     )}
 
     Seats(2)={(
+        bNonEnterable=true, // TODO: non-enterable for testing!
         CameraTag=none,
         bSeatVisible=true,
-        bNonEnterable=false,
         CameraOffset=-420,
         DriverDamageMult=1.0,
         SeatAnimBlendName=Pass2PositionNode,
         SeatBone=PassengerAttach_RearRight,
         InitialPositionIndex=0,
         SeatRotation=(Pitch=0,Yaw=0,Roll=0),
+        SeatOffset=(X=0,Y=0,Z=0),
         TurretVarPrefix="PassengerTwo",
         SeatPositions=
         (
@@ -218,21 +304,53 @@ DefaultProperties
                 DriverIdleAnim=Pass04_Idle,
                 AlternateIdleAnim=Pass04_Idle,
                 PositionFlinchAnims=(Pass04_Idle),
-                PositionDeathAnims=(Pass04_Death)
+                PositionDeathAnims=(Pass04_Death),
+                HipsIKInfo=
+                (
+                    PinEnabled=true,
+                    DefaultEffectorLocationTargetName=PassengerAttach_RearRight,
+                    DefaultEffectorRotationTargetName=PassengerAttach_RearRight,
+                ),
+                LookAtInfo=
+                (
+                    LookAtEnabled=true,
+                    DefaultLookAtTargetName=LookAt_Passenger_RearRight,
+                    HeadInfluence=1.0,
+                    BodyInfluence=1.0
+                ),
+                LeftHandIKInfo=
+                (
+                    IKEnabled=false,
+                    DefaultEffectorLocationTargetName=PointAt_Passenger_RearRight,
+                    DefaultEffectorRotationTargetName=PointAt_Passenger_RearRight
+                ),
+                LeftFootIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=IK_Passenger_RearRight_LeftFoot,
+                    DefaultEffectorRotationTargetName=IK_Passenger_RearRight_LeftFoot,
+                ),
+                RightFootIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=IK_Passenger_RearRight_RightFoot,
+                    DefaultEffectorRotationTargetName=IK_Passenger_RearRight_RightFoot,
+                ),
             )
         )
     )}
 
     Seats(3)={(
+        bNonEnterable=false,
         CameraTag=none,
         bSeatVisible=true,
-        bNonEnterable=false,
         CameraOffset=-420,
         DriverDamageMult=1.0,
-        SeatAnimBlendName=Pass3PositionNode,
+        SeatAnimBlendName=Pass3PositionNode, // TODO: check that nodes are correct!
         SeatBone=PassengerAttach_RearLeft,
         InitialPositionIndex=0,
         SeatRotation=(Pitch=0,Yaw=0,Roll=0),
+        SeatOffset=(X=0,Y=0,Z=0),
         TurretVarPrefix="PassengerThree",
         SeatPositions=
         (
@@ -248,7 +366,38 @@ DefaultProperties
                 DriverIdleAnim=Pass04_Idle,
                 AlternateIdleAnim=Pass04_Idle,
                 PositionFlinchAnims=(Pass04_Idle),
-                PositionDeathAnims=(Pass04_Death)
+                PositionDeathAnims=(Pass04_Death),
+                HipsIKInfo=
+                (
+                    PinEnabled=true,
+                    DefaultEffectorLocationTargetName=PassengerAttach_RearLeft,
+                    DefaultEffectorRotationTargetName=PassengerAttach_RearLeft,
+                ),
+                LookAtInfo=
+                (
+                    LookAtEnabled=true,
+                    DefaultLookAtTargetName=LookAt_Passenger_RearLeft,
+                    HeadInfluence=1.0,
+                    BodyInfluence=1.0
+                ),
+                LeftHandIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=PointAt_Passenger_RearLeft,
+                    DefaultEffectorRotationTargetName=PointAt_Passenger_RearLeft
+                ),
+                LeftFootIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=IK_Passenger_RearLeft_LeftFoot,
+                    DefaultEffectorRotationTargetName=IK_Passenger_RearLeft_LeftFoot,
+                ),
+                RightFootIKInfo=
+                (
+                    IKEnabled=true,
+                    DefaultEffectorLocationTargetName=IK_Passenger_RearLeft_RightFoot,
+                    DefaultEffectorRotationTargetName=IK_Passenger_RearLeft_RightFoot,
+                ),
             )
         )
     )}
@@ -259,8 +408,8 @@ DefaultProperties
         WheelRadius=17
         LongSlipFactor=2.0
         LatSlipFactor=1.5
-        HandbrakeLongSlipFactor=0.4
-        HandbrakeLatSlipFactor=0.2
+        HandbrakeLongSlipFactor=0.2
+        HandbrakeLatSlipFactor=0.1
         ParkedSlipFactor=2.0
         SkelControlName="R_Wheel_Rear"
         bPoweredWheel=true
@@ -273,8 +422,8 @@ DefaultProperties
         WheelRadius=17
         LongSlipFactor=2.0
         LatSlipFactor=1.5
-        HandbrakeLongSlipFactor=0.4
-        HandbrakeLatSlipFactor=0.2
+        HandbrakeLongSlipFactor=0.2
+        HandbrakeLatSlipFactor=0.1
         ParkedSlipFactor=2.0
         SkelControlName="L_Wheel_Rear"
         bPoweredWheel=true
@@ -288,12 +437,12 @@ DefaultProperties
         SteerFactor=1.0
         LongSlipFactor=2.0
         LatSlipFactor=1.5
-        HandbrakeLongSlipFactor=0.8
-        HandbrakeLatSlipFactor=0.8
+        HandbrakeLongSlipFactor=2.0
+        HandbrakeLatSlipFactor=1.5
         ParkedSlipFactor=2.0
         SkelControlName="R_Wheel_Front"
         bPoweredWheel=true
-        SuspensionTravel=5.8
+        SuspensionTravel=4.0
     End Object
 
     Begin Object Name=LFWheel
@@ -303,46 +452,48 @@ DefaultProperties
         WheelRadius=17
         LongSlipFactor=2.0
         LatSlipFactor=1.5
-        HandbrakeLongSlipFactor=0.8
-        HandbrakeLatSlipFactor=0.8
+        HandbrakeLongSlipFactor=2.0
+        HandbrakeLatSlipFactor=1.5
         ParkedSlipFactor=2.0
         SkelControlName="L_Wheel_Front"
         bPoweredWheel=true
-        SuspensionTravel=5.8
+        SuspensionTravel=4.0
     End Object
 
     Begin Object Name=SimObject
         bClampedFrictionModel=True
         bAutoHandbrake=True
 
-        SpeedBasedTurnDamping=10
+        SpeedBasedTurnDamping=5
+
+        HardTurnMotorTorque=1.0
 
         AirControlTurnTorque=0.0//0.2
         InAirUprightTorqueFactor=0.0//-1.0
         InAirUprightMaxTorque=0.0//5.0
 
-        MaxBrakeTorque=8.0
-        EngineBrakeFactor=0.010000//0.0001
+        MaxBrakeTorque=7.0
+        EngineBrakeFactor=0.001000
 
         StopThreshold=75
 
-        ChassisTorqueScale=0.0
+        ChassisTorqueScale=150.0
 
         WheelSuspensionBias=0.1
-        WheelSuspensionDamping=28
-        WheelSuspensionStiffness=2500
+        WheelSuspensionDamping=40
+        WheelSuspensionStiffness=2300
 
         MaxSteerAngleCurve={(
             Points=
             (
                 (InVal=0,OutVal=35),
-                (InVal=600.0,OutVal=25.0),
-                (InVal=1100.0,OutVal=15.0),
-                (InVal=1300.0,OutVal=10.0),
+                (InVal=600.0,OutVal=20.0),
+                (InVal=1100.0,OutVal=10.0),
+                (InVal=1300.0,OutVal=7.5),
                 (InVal=1600.0,OutVal=1.0)
             )
         )}
-        SteerSpeed=75
+        SteerSpeed=35
 
         LSDFactor=0.0
 
@@ -380,13 +531,18 @@ DefaultProperties
         WheelLongAsymptoteValue=0.6
 
         // Lateral tire model based on slip angle (radians)
-           WheelLatExtremumSlip=0.35     // 20 degrees
+        WheelLatExtremumSlip=0.35     // 20 degrees
         WheelLatExtremumValue=0.9
         WheelLatAsymptoteSlip=1.4     // 80 degrees
         WheelLatAsymptoteValue=0.9
     End Object
 
-    SteeringWheelSkelControlName=SteeringWheel
+    // SteeringWheelSkelControlName=SteeringWheel
+
+    SeatTextureOffsets(0)=(PositionOffSet=(X=-5,Y=+10,Z=0),bTurretPosition=0)
+	SeatTextureOffsets(1)=(PositionOffSet=(X=+5,Y=+10,Z=0),bTurretPosition=0)
+	SeatTextureOffsets(2)=(PositionOffSet=(X=+5,Y=-10,Z=0),bTurretPosition=0)
+	SeatTextureOffsets(3)=(PositionOffSet=(X=-5,Y=-10,Z=0),bTurretPosition=0)
 
     DefaultPhysicalMaterial=PhysicalMaterial'VH_VN_US_UH1H.Phys.PhysMat_UH1H'
     DrivingPhysicalMaterial=PhysicalMaterial'VH_VN_US_UH1H.Phys.PhysMat_UH1H'
