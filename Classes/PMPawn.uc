@@ -216,6 +216,35 @@ simulated function SetHeadLookAtActive(bool bActive)
     }
 }
 
+singular event BaseChange()
+{
+    local DynamicSMActor Dyn;
+
+    // Pawns can only set base to non-pawns, or pawns which specifically allow it.
+    // Otherwise we do some damage and jump off.
+    if (Pawn(Base) != None && (DrivenVehicle == None || !DrivenVehicle.IsBasedOn(Base)))
+    {
+        if( !Pawn(Base).CanBeBaseForPawn(Self) )
+        {
+            // Don't damage the other pawn! - Ramm
+            //Pawn(Base).CrushedBy(self);
+            JumpOffPawn();
+        }
+        else if (ROVehicle(Base) != none && !ROVehicle(Base).CanBeBaseForPawn(Self))
+        {
+            JumpOffVehicle();
+        }
+    }
+
+    // If it's a KActor, see if we can stand on it.
+    Dyn = DynamicSMActor(Base);
+    if( Dyn != none && !Dyn.CanBasePawn(self) )
+
+    {
+        JumpOffPawn();
+    }
+}
+
 function TakeFallingDamage()
 {
     local float EffectiveSpeed;

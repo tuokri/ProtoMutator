@@ -621,6 +621,64 @@ simulated exec function FindObjectX(string FullObjectName, optional string Objec
     `pmlog("Found object: " $ FindObject(FullObjectName, ObjectClass));
 }
 
+simulated exec function AttachMeToVehicle(optional string AttachBone)
+{
+    `pmlog("AttachBone:" @ AttachBone);
+    DoAttachMeToVehicle(AttachBone);
+    if (WorldInfo.NetMode == NM_Client)
+    {
+        ServerAttachMeToVehicle(AttachBone);
+    }
+}
+
+simulated function DoAttachMeToVehicle(optional string AttachBone)
+{
+    local ROVehicle ROV;
+    local vector BoneLoc;
+    local rotator BoneRot;
+
+    if (AttachBone == "")
+    {
+        `pmlog("clearing attachment");
+        bIgnoreMoveInput = 0;
+        Pawn.SetHardAttach(false);
+        Pawn.bCollideWorld = true;
+        Pawn.SetCollision(true, true);
+        Pawn.SetBase(none);
+        Pawn.SetPhysics(PHYS_Falling);
+        Pawn.bIgnoreBaseRotation = false;
+        Pawn.bShadowParented = false;
+        return;
+    }
+
+    ForEach VisibleActors(class'ROVehicle', ROV, 5000, Pawn.Location)
+    {
+        `pmlog("attaching to ROV:" @ ROV);
+        bIgnoreMoveInput = 1;
+        Pawn.SetCollision(false, false);
+        Pawn.bCollideWorld = false;
+        Pawn.SetBase(none);
+        Pawn.SetHardAttach(false);
+        Pawn.SetPhysics(PHYS_Interpolating);
+        Pawn.SetBase(ROV, , ROV.Mesh, name(AttachBone));
+        Pawn.SetPhysics(PHYS_Interpolating); // Need to set again after SetBase().
+        // Pawn.bIgnoreBaseRotation = true;
+        Pawn.bShadowParented = true;
+
+        BoneLoc = ROV.Mesh.GetBoneLocation(name(AttachBone), 1);
+        BoneRot = rot(0,0,0);
+        Pawn.SetRelativeLocation(BoneLoc);
+        Pawn.SetRelativeRotation(BoneRot);
+
+        return;
+    }
+}
+
+reliable server function ServerAttachMeToVehicle(optional string AttachBone)
+{
+    DoAttachMeToVehicle(AttachBone);
+}
+
 function SetDisableTeamSwapTimer()
 {
     // "Developer sanity".

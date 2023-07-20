@@ -3,6 +3,8 @@ class PMVehicle_Renault4CV_2 extends PMVehicleWheeled
 
 DefaultProperties
 {
+    bCanBeBaseForPawns=True
+
     bInfantryCanUse=True
     bOpenVehicle=True
     bTeamLocked=False
