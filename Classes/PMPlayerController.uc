@@ -218,6 +218,92 @@ reliable protected server function ServerLeanLeft(bool leanstate)
     }
 }
 
+// Server browser stuff.
+
+function OnPlayerListComplete(bool bWasSuccessful)
+{
+    `pmlog("bWasSuccessful:" @ bWasSuccessful);
+}
+
+simulated exec function TestServerStuff()
+{
+    local ROUISceneMainMenu MainMenu;
+    local OnlineGameSearch CurGameSearch;
+    local OnlineGameSettings GameSettings;
+    local OnlineGameSearchResult SearchResult;
+    local RODataStore_OnlineGameSearch OnlineGameSearchStore;
+    local int i;
+    local int NumResults;
+    local int NumPlayers;
+    local bool bRefreshSuccess;
+
+    OnlineSub.GameInterface.AddPlayerListCompleteDelegate(OnPlayerListComplete);
+
+    MainMenu = ROUISceneMainMenu(
+        ROGameViewportClient(LocalPlayer(Player).ViewportClient).GetMainMenuScene());
+
+    OnlineGameSearchStore = RODataStore_OnlineGameSearch(
+        class'UIInteraction'.static.GetDataStoreClient().FindDataStore(
+            class'RODataStore_OnlineGameSearch'.default.Tag, LocalPlayer(Player)));
+
+    if (MainMenu == None)
+    {
+        `pmlog("cannot get main menu reference");
+        return;
+    }
+
+    if (OnlineGameSearchStore == None)
+    {
+        `pmlog("cannot get online game search store reference");
+        return;
+    }
+
+    CurGameSearch = MainMenu.SearchDataStore.GetActiveGameSearch();
+    if (CurGameSearch == None)
+    {
+        `pmlog("no CurGameSearch");
+        return;
+    }
+
+    `pmlog("NamedProperties");
+    for (i = 0; i < CurGameSearch.NamedProperties.Length; ++i)
+    {
+        `pmlog(
+            CurGameSearch.NamedProperties[i].ObjectPropertyName
+            $ "="
+            $ CurGameSearch.NamedProperties[i].ObjectPropertyValue);
+    }
+    `pmlog("################################");
+
+    NumResults = CurGameSearch.Results.Length;
+    for(i = 0; i < NumResults; ++i)
+    {
+        GameSettings = CurGameSearch.Results[i].GameSettings;
+        SearchResult = CurGameSearch.Results[i];
+        NumPlayers = GameSettings.PlayersInGame.Length;
+        `pmlog("----------------------------------------------------");
+        `pmlog("Result:" @ i @ "/" @ NumResults - 1);
+        `pmlog("Name:" @ GameSettings.OwningPlayerName);
+        `pmlog("NumPlayers:" @ NumPlayers);
+        `pmlog("PlayerRatio:" @ GameSettings.PlayerRatio);
+        `pmlog("NumOpenPublicConnections:" @ GameSettings.NumOpenPublicConnections);
+        `pmlog("NumPublicConnections:" @ GameSettings.NumPublicConnections);
+        `pmlog("PlayerListProvider.GetElementCount():" @ OnlineGameSearchStore.PlayerListProvider.GetElementCount());
+
+        if (OnlineGameInterfaceSteamworks(OnlineSub.GameInterface) == None)
+        {
+            `pmlog("cannot get OnlineGameInterfaceSteamworks reference");
+        }
+        OnlineGameInterfaceSteamworks(OnlineSub.GameInterface).QueryPlayerListForServer(SearchResult);
+        bRefreshSuccess = OnlineSub.GameInterface.RefreshSearchResult(i);
+        `pmlog("bRefreshSuccess:" @ bRefreshSuccess);
+
+        NumPlayers = GameSettings.PlayersInGame.Length;
+        `pmlog("NumPlayers:" @ NumPlayers);
+        `pmlog("PlayerListProvider.GetElementCount():" @ OnlineGameSearchStore.PlayerListProvider.GetElementCount());
+    }
+}
+
 // -------------------- DEBUG HELPERS --------------------
 `if(`isdefined(DEBUG_BUILD))
 
